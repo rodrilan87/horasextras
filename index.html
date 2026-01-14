@@ -3,222 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Horas Extras OSDE</title>
+    <title>Gestión Horas OSDE</title>
     <style>
-        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --green: #27ae60; --yellow: #f1c40f; --red: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        .container { max-width: 1000px; margin: auto; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        /* SEMÁFORO */
-        .semaforo-container { margin: 15px 0; }
-        .bar-bg { background: #eee; height: 25px; border-radius: 15px; overflow: hidden; border: 1px solid #ddd; }
-        .bar-fill { height: 100%; transition: width 0.5s; width: 0%; }
-        
-        /* CAJAS POR COLORES */
-        .box-rosa { border: 2px solid #ff00ff44; background: #fffaff; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .box-verde { border: 2px solid var(--green); background: #fafffa; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .box-naranja { border: 2px solid var(--orange); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-
-        .hidden { display: none !important; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; }
-        .btn-hoy { background: var(--sky); width: auto; padding: 5px 10px; font-size: 12px; margin-bottom: 5px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th { background: var(--navy); color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        
-        .status-alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center; }
+        :root { --azul: #003057; --naranja: #E87722; --verde: #27ae60; --rojo: #e74c3c; }
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--azul); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .box-carga { display: none; text-align: left; max-width: 800px; margin: auto; }
+        .caja { padding: 15px; border-radius: 10px; margin: 10px 0; border: 2px solid #eee; }
+        .rosa { background: #fffaff; border-color: #ff00ff22; }
+        .verde { background: #fafffa; border-color: var(--verde); }
+        .naranja { border-color: var(--naranja); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="view-login" class="card" style="max-width: 400px; margin: 100px auto;">
-        <h2 style="color: var(--navy); text-align: center;">Acceso OSDE</h2>
-        <input type="email" id="email" placeholder="usuario@osde.com.ar o @gmx.com">
-        <input type="password" id="pass" placeholder="Contraseña" style="margin-top: 10px;">
-        <button class="btn" style="background: var(--navy); margin-top: 20px;" onclick="app.init()">INGRESAR</button>
+    <div id="pantalla-login" class="card">
+        <h2 style="color: var(--azul)">OSDE Portal</h2>
+        <input type="email" id="email" placeholder="usuario@osde.com.ar o rodri@gmx.com">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="app.login()">ENTRAR</button>
+        <p id="error-msg" style="color: red; font-size: 14px; margin-top: 10px;"></p>
     </div>
 
-    <div id="view-app" class="hidden">
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="user-saludo" style="margin:0"></h3>
-            <button class="btn" style="background: var(--red); width: auto;" onclick="location.reload()">SALIR</button>
+    <div id="pantalla-app" class="card box-carga">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="saludo">Bienvenido</h3>
+            <button onclick="location.reload()" style="width: auto; background: var(--rojo); padding: 5px 15px;">SALIR</button>
+        </div>
+        
+        <p>Horas consumidas este mes: <b id="total-hs">0 / 30hs</b></p>
+
+        <h3>Nueva Jornada</h3>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <div style="flex:1"><label>Fecha:</label><input type="date" id="f_fecha"></div>
+            <button onclick="app.setHoy()" style="width: auto; margin-bottom: 10px; background: #0076BE;">HOY</button>
         </div>
 
-        <div id="alert-bloqueo" class="status-alert hidden" style="background: #fdeaea; color: #c0392b;">
-            SISTEMA BLOQUEADO POR ADMINISTRACIÓN
+        <div class="caja rosa">
+            <label>Horas:</label>
+            <input type="number" id="f_hs" step="0.5" placeholder="Ej: 2.5">
         </div>
 
-        <div id="section-user">
-            <div class="card semaforo-container">
-                <div style="display: flex; justify-content: space-between;">
-                    <span id="label-hs">Horas del mes: 0 / 30 hs</span>
-                    <span id="label-mes">Mes: ---</span>
-                </div>
-                <div class="bar-bg"><div id="bar-hs" class="bar-fill"></div></div>
-                <div id="aviso-exceso" class="hidden" style="color: var(--red); font-size: 12px; margin-top: 5px;">
-                    ⚠️ Tope superado. Las horas nuevas se contarán para el mes siguiente.
-                </div>
-            </div>
-
-            <div class="card">
-                <h4>Nueva Carga</h4>
-                <button class="btn btn-hoy" onclick="app.setHoy()">Poner HOY</button>
-                <input type="date" id="f-fecha">
-                
-                <div class="box-rosa">
-                    <div style="display: flex; gap: 10px;">
-                        <div><label>Desde</label><input type="time" id="f-desde"></div>
-                        <div><label>Hasta</label><input type="time" id="f-hasta"></div>
-                        <div><label>Total Hs</label><input type="number" id="f-hs" step="0.5"></div>
-                    </div>
-                </div>
-
-                <div class="box-verde">
-                    <label>Tipo de Hora Extra</label>
-                    <select id="f-tipo"><option value="50">Al 50%</option><option value="100">Al 100%</option></select>
-                </div>
-
-                <div class="box-naranja">
-                    <label>Ticket / Tarea</label>
-                    <input type="text" id="f-tk" placeholder="ID del ticket o descripción">
-                </div>
-
-                <label>Sugerencias (Máx 50 palabras)</label>
-                <textarea id="f-sug" maxlength="300"></textarea>
-
-                <button id="btn-save" class="btn" style="background: var(--orange); margin-top: 15px;" onclick="app.save()">GUARDAR REGISTRO</button>
-            </div>
-
-            <div class="card">
-                <h4>Mis Registros del Mes</h4>
-                <div id="user-table-container"></div>
-            </div>
+        <div class="caja verde">
+            <label>Tipo:</label>
+            <select id="f_tipo" style="width: 100%; padding: 10px; border-radius: 8px;">
+                <option value="50">50%</option>
+                <option value="100">100%</option>
+            </select>
         </div>
 
-        <div id="section-admin" class="hidden">
-            <div class="card">
-                <h4>Panel de Auditoría General (Todos los Usuarios)</h4>
-                <div style="overflow-x: auto;" id="admin-table-container"></div>
-            </div>
+        <div class="caja naranja">
+            <label>Tarea:</label>
+            <input type="text" id="f_tk" placeholder="Descripción">
         </div>
+
+        <button style="background: var(--naranja)" onclick="app.guardar()">GUARDAR JORNADA</button>
     </div>
-</div>
 
 <script>
-    const API = "https://script.google.com/macros/s/AKfycbyRwYYxiX0EUYPdM1vrJLl8IcW8qmw_iPhImMlCHNWLMGYMoT0kUcOTqBRdAEu4_zBq/exec";
+    // ⚠️ CAMBIA ESTO POR TU URL DE "NUEVA IMPLEMENTACIÓN"
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYZ4X10_x2tjl3Fn8dBlBCtYuGYSY3NCydy2yHEJ7kj_lmR-nnjKZsvXc3mgE9q-mO4g/exec";
 
     const app = {
-        user: null, db: null,
-        meses: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
+        user: null,
 
-        async init() {
-            const email = document.getElementById('email').value.toLowerCase();
+        async login() {
+            const email = document.getElementById('email').value.toLowerCase().trim();
             const pass = document.getElementById('pass').value;
+            const errorElement = document.getElementById('error-msg');
 
+            errorElement.innerText = "Conectando...";
+
+            // 1. Lógica Admin (Foto 8 corregida: Ahora sí redirecciona)
+            if (email === "rodri@gmx.com" && pass === "1234") {
+                this.user = { nombre: "Rodrigo Daniel Botta", email: email, rol: "jefe" };
+                this.showApp();
+                return;
+            }
+
+            // 2. Lógica Usuarios @osde (Foto 2 y 7 corregidas)
             try {
-                const res = await fetch(API);
-                this.db = await res.json();
-
-                if(this.db.bloqueado && !email.includes('@gmx')) {
-                    alert("Sitio bloqueado temporalmente."); return;
-                }
-
-                // Login Admin Rodrigo
-                if(email === "rodri@gmx.com" && pass === "1234") {
-                    this.user = { nombre: "Rodrigo", email: email, rol: "jefe" };
-                } else {
-                    const u = this.db.usuarios.find(r => r[2] === email && String(r[3]) === pass);
-                    if(!u) return alert("Error de credenciales.");
+                const res = await fetch(WEB_APP_URL);
+                const db = await res.json();
+                
+                const u = db.usuarios.find(r => r[2] === email && String(r[3]) === pass);
+                if (u) {
                     this.user = { nombre: u[1], email: u[2], rol: u[4] };
+                    this.showApp();
+                } else {
+                    errorElement.innerText = "Usuario o clave incorrectos.";
                 }
-
-                this.render();
-            } catch(e) { alert("Error de conexión."); }
-        },
-
-        render() {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-app').classList.remove('hidden');
-            document.getElementById('user-saludo').innerText = "Bienvenido, " + this.user.nombre;
-            
-            if(this.user.rol === "jefe") {
-                document.getElementById('section-admin').classList.remove('hidden');
-                this.renderAdmin();
+            } catch (e) {
+                errorElement.innerText = "Error de conexión con la base de datos. Revisa la URL.";
+                console.error(e);
             }
-            this.renderUser();
         },
 
-        renderUser() {
-            const mesActual = new Date().getMonth();
-            document.getElementById('label-mes').innerText = "Mes: " + this.meses[mesActual];
-            
-            const misReg = this.db.registros.filter(r => r[1] === this.user.email && r[9] == mesActual);
-            const totalHs = misReg.reduce((acc, r) => acc + parseFloat(r[5] || 0), 0);
-            
-            // Lógica de Semáforo
-            const bar = document.getElementById('bar-hs');
-            const label = document.getElementById('label-hs');
-            label.innerText = `Horas del mes: ${totalHs} / 30 hs`;
-            
-            let color = "var(--green)";
-            if(totalHs > 25) color = "var(--yellow)";
-            if(totalHs >= 30) {
-                color = "var(--red)";
-                document.getElementById('aviso-exceso').classList.remove('hidden');
-            }
-            bar.style.width = Math.min((totalHs / 30) * 100, 100) + "%";
-            bar.style.background = color;
-
-            this.drawTable('user-table-container', misReg, true);
+        showApp() {
+            document.getElementById('pantalla-login').classList.add('hidden');
+            document.getElementById('pantalla-app').style.display = 'block';
+            document.getElementById('saludo').innerText = "Bienvenido, " + this.user.nombre;
+            this.setHoy();
         },
 
-        renderAdmin() {
-            this.drawTable('admin-table-container', this.db.registros.filter(r => r[0]==="DATA"), false);
+        setHoy() {
+            document.getElementById('f_fecha').value = new Date().toISOString().split('T')[0];
         },
 
-        drawTable(containerId, data, isUser) {
-            let h = `<table><thead><tr><th>Fecha</th>${!isUser?'<th>User</th>':''}<th>Tarea</th><th>Hs</th><th>Acción</th></tr></thead><tbody>`;
-            data.forEach(r => {
-                h += `<tr>
-                    <td>${r[2]}</td>
-                    ${!isUser?`<td>${r[1]}</td>`:''}
-                    <td>${r[7]}</td>
-                    <td>${r[5]}hs</td>
-                    <td><button onclick="app.borrar('${r[10]}')" style="color:red; background:none; border:none; cursor:pointer;">✖</button></td>
-                </tr>`;
-            });
-            document.getElementById(containerId).innerHTML = h + "</tbody></table>";
-        },
-
-        async save() {
-            const data = {
-                type: "carga", u: this.user.email, n: this.user.nombre,
-                fecha: document.getElementById('f-fecha').value,
-                desde: document.getElementById('f-desde').value,
-                hasta: document.getElementById('f-hasta').value,
-                h: document.getElementById('f-hs').value,
-                p: document.getElementById('f-tipo').value,
-                tk: document.getElementById('f-tk').value,
-                sug: document.getElementById('f-sug').value
+        async guardar() {
+            const payload = {
+                type: "carga",
+                u: this.user.email,
+                fecha: document.getElementById('f_fecha').value,
+                h: document.getElementById('f_hs').value,
+                p: document.getElementById('f_tipo').value,
+                tk: document.getElementById('f_tk').value,
+                mes: new Date().getMonth()
             };
-            if(!data.fecha || !data.h) return alert("Faltan datos.");
-            
-            document.getElementById('btn-save').innerText = "Guardando...";
-            await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            location.reload();
-        },
 
-        async borrar(id) {
-            if(!confirm("¿Borrar registro?")) return;
-            await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"borrar", id: id}) });
-            location.reload();
-        },
+            if(!payload.h || !payload.tk) return alert("Completa todos los campos");
 
-        setHoy() { document.getElementById('f-fecha').value = new Date().toISOString().split('T')[0]; }
+            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("Jornada Guardada");
+            location.reload();
+        }
     };
 </script>
 </body>
