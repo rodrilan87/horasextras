@@ -3,111 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA CONTROL OSDE</title>
+    <title>SISTEMA OSDE - V1.0</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border-top: 6px solid #003057; }
-        h2 { text-align: center; color: #003057; margin-bottom: 1.5rem; }
-        input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 12px; background: #003057; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        .toggle-link { text-align: center; margin-top: 1.2rem; font-size: 0.9rem; color: #0076BE; cursor: pointer; text-decoration: underline; }
+        body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
         .hidden { display: none; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #003057; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-reg { background: #27ae60; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2 id="form-title">Iniciar Sesión</h2>
-    
-    <div id="login-form">
-        <input type="email" id="l_email" placeholder="Email (@osde.com.ar)">
+<div id="auth-box" class="card">
+    <h2 style="text-align:center; color:#003057;">OSDE ACCESO</h2>
+    <div id="login-view">
+        <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
         <input type="password" id="l_pass" placeholder="Contraseña">
-        <button onclick="app.login()">ENTRAR</button>
-        <p class="toggle-link" onclick="app.showReg()">¿No tienes cuenta? Regístrate</p>
+        <button onclick="app.login()">INGRESAR</button>
+        <p style="text-align:center; cursor:pointer; color:#0076BE;" onclick="app.view(true)">Crear cuenta nueva</p>
     </div>
-
-    <div id="reg-form" class="hidden">
+    <div id="reg-view" class="hidden">
         <input type="text" id="r_name" placeholder="Nombre completo">
         <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-        <input type="password" id="r_pass" placeholder="Crear contraseña">
-        <button onclick="app.register()">CREAR CUENTA</button>
-        <p class="toggle-link" onclick="app.showLogin()">Volver al inicio</p>
+        <input type="password" id="r_pass" placeholder="Contraseña">
+        <button class="btn-reg" onclick="app.register()">REGISTRARME</button>
+        <p style="text-align:center; cursor:pointer;" onclick="app.view(false)">Volver al login</p>
     </div>
 </div>
 
+<div id="app-box" class="card hidden" style="max-width: 800px;">
+    <h2 id="saludo"></h2>
+    <div id="status-conexion" style="color: green; font-weight: bold;">● Conectado a Base de Datos</div>
+    <hr>
+    <p>Estamos listos para cargar la interfaz de horarios.</p>
+    <button onclick="location.reload()" style="background:#dc3545;">CERRAR SESIÓN</button>
+</div>
+
 <script>
-    // IMPORTANTE: Pon aquí tu URL de implementación (la que termina en /exec)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxia_lBeBQIEDAw0NglfW4YQliWwKfzMbICXwa1ZpqzGTcbMhlOT4tH4p0uH_C3rXhavA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVkTylXVVagn-1WIGRQG4PhW5Zw3SMP557Mfsbc70Xf90GA_IwkwpCap1yqsHsQyxCpQ/exec"; // REEMPLAZA ESTO
 
     const app = {
+        user: null,
+        
         async login() {
-            const email = document.getElementById('l_email').value.toLowerCase().trim();
-            const pass = document.getElementById('l_pass').value;
+            const m = document.getElementById('l_email').value.toLowerCase().trim();
+            const p = document.getElementById('l_pass').value;
 
-            // 1. Acceso Directo Admin (Según tus instrucciones)
-            if (email === "rodri@gmx.com" && pass === "1234") {
-                alert("Acceso concedido: Administrador Rodrigo");
-                // Aquí activaremos la interfaz de jefe en el próximo paso
+            // 1. Caso especial Admin (según tus instrucciones)
+            if (m === "rodri@gmx.com" && p === "1234") {
+                this.user = { n: "Rodrigo", m: m, r: "jefe" };
+                this.showApp();
                 return;
             }
 
-            // 2. Acceso Usuarios OSDE desde la planilla
+            // 2. Usuarios de la Planilla
             try {
-                const response = await fetch(WEB_APP_URL);
-                const data = await response.json();
+                const res = await fetch(WEB_APP_URL);
+                const db = await res.json();
+                const u = db.find(r => r[0]==="USER" && r[2]===m && String(r[3])===p);
                 
-                // Buscamos si existe el usuario con esa clave
-                const user = data.find(row => row[0] === "USER" && row[2] === email && String(row[3]) === pass);
-
-                if (user) {
-                    alert("Hola " + user[1] + ". Has ingresado correctamente.");
+                if(u) {
+                    this.user = { n: u[1], m: u[2], r: u[4] };
+                    this.showApp();
                 } else {
-                    alert("Email o contraseña no válidos.");
+                    alert("Usuario o clave no válidos.");
                 }
-            } catch (e) {
-                alert("Error de conexión: Verifica que la URL del script sea correcta y esté publicada.");
-            }
+            } catch(e) { alert("Error de conexión."); }
         },
 
         async register() {
-            const name = document.getElementById('r_name').value.trim();
-            const email = document.getElementById('r_email').value.toLowerCase().trim();
-            const pass = document.getElementById('r_pass').value;
+            const n = document.getElementById('r_name').value;
+            const m = document.getElementById('r_email').value.toLowerCase().trim();
+            const p = document.getElementById('r_pass').value;
 
-            // Restricción de dominio
-            if (!email.endsWith("@osde.com.ar")) {
-                alert("Error: Solo se permiten correos @osde.com.ar");
-                return;
-            }
+            if(!m.endsWith("@osde.com.ar")) return alert("Solo correos @osde.com.ar");
 
-            if (!name || !pass) return alert("Completa todos los campos.");
-
-            const payload = { type: "registro", nombre: name, email: email, password: pass };
-
-            try {
-                // Envío de datos a Google Sheets
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(payload)
-                });
-                alert("¡Registro enviado! Ya puedes iniciar sesión.");
-                this.showLogin();
-            } catch (e) {
-                alert("Error al intentar registrar.");
-            }
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({type: "registro", n, m, p})
+            });
+            alert("¡Registrado! Ya podés loguearte.");
+            this.view(false);
         },
 
-        showReg() {
-            document.getElementById('form-title').innerText = "Nuevo Usuario";
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('reg-form').classList.remove('hidden');
+        showApp() {
+            document.getElementById('auth-box').classList.add('hidden');
+            document.getElementById('app-box').classList.remove('hidden');
+            document.getElementById('saludo').innerText = "Hola, " + this.user.n;
         },
-        showLogin() {
-            document.getElementById('form-title').innerText = "Iniciar Sesión";
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('reg-form').classList.add('hidden');
+
+        view(reg) {
+            document.getElementById('login-view').className = reg ? 'hidden' : '';
+            document.getElementById('reg-view').className = reg ? '' : 'hidden';
         }
     };
 </script>
