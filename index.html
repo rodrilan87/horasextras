@@ -2,174 +2,180 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema OSDE - Gestión de Horas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSDE - Control de Horas Pro</title>
     <style>
-        /* CSS: DISEÑO Y SEMÁFORO */
         :root { --osde: #00548f; --rojo: #d9534f; --verde: #5cb85c; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 12px; max-width: 750px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f7; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        /* SEMÁFORO */
-        .semaforo { padding: 15px; border-radius: 8px; color: white; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        /* Semáforo */
+        .semaforo { padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: center; margin-bottom: 20px; font-size: 1.2em; }
         .verde { background: var(--verde); }
         .rojo { background: var(--rojo); }
 
-        /* FORMULARIO */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input, select, textarea, button { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { background: var(--osde); color: white; border: none; font-weight: bold; cursor: pointer; }
+        /* Formulario */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select, textarea, button { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        button { background: var(--osde); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
         
-        /* AUDITORÍA */
-        .audit-item { background: #f9f9f9; border-left: 5px solid var(--osde); padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+        /* Auditoría */
+        .registro-card { border-left: 6px solid var(--osde); background: #f9fcff; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .hidden { display: none; }
+        label { font-size: 12px; font-weight: bold; color: var(--osde); }
     </style>
 </head>
 <body>
 
-    <div class="card" id="login-section">
-        <h2 style="color:var(--osde)">Ingreso Seguro OSDE</h2>
-        <input type="email" id="email" placeholder="Usuario (@osde.com.ar / @gmx.com)">
-        <input type="password" id="pass" placeholder="Contraseña">
-        <button onclick="ejecutarLogin()">INGRESAR</button>
+<div class="container">
+    <div class="card" id="view-login">
+        <h2 style="color:var(--osde); text-align:center;">Acceso Seguro OSDE</h2>
+        <input type="email" id="log-u" placeholder="Email (@osde.com.ar / @gmx.com)">
+        <input type="password" id="log-p" placeholder="Contraseña">
+        <button onclick="login()">INGRESAR AL SISTEMA</button>
     </div>
 
-    <div class="card hidden" id="panel-principal">
-        <h2 id="saludo">Panel de Gestión</h2>
+    <div class="card hidden" id="view-panel">
+        <h2 id="txt-user">Bienvenido</h2>
         
-        <div id="semaforo" class="semaforo verde">Horas este mes: 0hs</div>
+        <div id="status-semaforo" class="semaforo verde">Calculando horas mensuales...</div>
 
-        <div id="formulario-carga">
+        <div id="form-carga">
             <div class="grid">
-                <div><label>Fecha:</label><input type="date" id="fecha-h"></div>
-                <div><label>Ticket ID:</label><input type="text" id="tk-h" placeholder="N° Ticket"></div>
-                <div><label>Desde:</label><input type="time" id="desde-h"></div>
-                <div><label>Hasta:</label><input type="time" id="hasta-h"></div>
-                <div><label>Total Horas:</label><input type="number" id="cant-h" placeholder="Ej: 2.5"></div>
-                <div><label>Recargo:</label>
-                    <select id="tipo-h">
-                        <option value="100%">Al 100%</option>
-                        <option value="50%">Al 50%</option>
+                <div><label>Fecha del trabajo</label><input type="date" id="f-fecha"></div>
+                <div><label>Ticket ID</label><input type="text" id="f-tk" placeholder="Ej: 10293"></div>
+                <div><label>Desde</label><input type="time" id="f-ini"></div>
+                <div><label>Hasta</label><input type="time" id="f-fin"></div>
+                <div><label>Horas Totales</label><input type="number" id="f-hs" step="0.5" placeholder="Ej: 2.5"></div>
+                <div><label>Tipo de Recargo</label>
+                    <select id="f-tipo">
+                        <option value="100%">Recargo 100%</option>
+                        <option value="50%">Recargo 50%</option>
                     </select>
                 </div>
             </div>
-            <select id="mes-h">
+            <label>Mes de Imputación</label>
+            <select id="f-mes">
                 <option value="Enero">Enero 2026</option>
                 <option value="Febrero">Febrero 2026</option>
+                <option value="Marzo">Marzo 2026</option>
             </select>
-            <textarea id="sug-h" maxlength="300" placeholder="Sugerencias o comentarios (máx 50 palabras)"></textarea>
-            <button onclick="cargarHoras()">CARGAR REGISTRO</button>
+            <textarea id="f-sug" maxlength="250" placeholder="Sugerencias o comentarios (máx 50 palabras)"></textarea>
+            <button onclick="enviarRegistro()">GUARDAR CARGA</button>
         </div>
 
-        <div id="admin-controls" class="hidden" style="margin-top:20px; border-top: 2px solid #eee; padding-top:10px;">
-            <h3 style="color:var(--rojo)">Control de Administrador</h3>
-            <button onclick="cambiarEstadoSitio('BLOQUEADO')" style="background:#e67e22; margin-bottom: 5px;">Bloquear Sitio</button>
-            <button onclick="cambiarEstadoSitio('ACTIVO')" style="background:#27ae60">Activar Sitio</button>
+        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+        <div id="admin-tools" class="hidden" style="background:#fff3cd; padding:15px; border-radius:10px; border: 1px solid #ffeeba;">
+            <h3 style="margin:0 0 10px 0;">Panel de Control Admin</h3>
+            <div style="display:flex; gap:10px;">
+                <button onclick="setEstado('BLOQUEADO')" style="background:#856404;">Bloquear Sitio</button>
+                <button onclick="setEstado('ACTIVO')" style="background:#155724;">Activar Sitio</button>
+            </div>
         </div>
 
-        <h3 style="margin-top:30px">Historial y Auditoría</h3>
+        <h3>Mis Registros / Auditoría</h3>
         <div id="lista-auditoria"></div>
     </div>
+</div>
 
-    <script>
-        const URL_API = "https://script.google.com/macros/s/AKfycbywl__MWMfFaitVEkHXnnOd8c5V4F5TbRtTNQqS72qs-77kN4yRft2exQOvCjAgNxjH/exec"; // REEMPLAZAR CON TU URL /exec
-        let sessionEmail = ""; let sessionNombre = ""; let sessionRol = "";
+<script>
+    const API = "https://script.google.com/macros/s/AKfycbwlUwUYZy2f-WxcdVL3VZkR0uCU_9TK9GNmvp2RVRHxf731Lu6Wo3dGrKEyqy4Bp6u6/exec"; // REEMPLAZAR CON LA URL DE GOOGLE APPS SCRIPT
+    let uEmail = "", uNombre = "", uRol = "";
 
-        // 1. LOGIN: Valida email, clave y obtiene el ROL (Admin/User)
-        async function ejecutarLogin() {
-            const u = document.getElementById('email').value.trim();
-            const p = document.getElementById('pass').value;
-            const res = await fetch(URL_API, { method: 'POST', body: JSON.stringify({type: "login", u, p}) });
+    // 1. LOGIN CON RESPUESTA REAL
+    async function login() {
+        const u = document.getElementById('log-u').value.trim();
+        const p = document.getElementById('log-p').value.trim();
+        if(!u || !p) return alert("Completa los datos");
+
+        try {
+            const res = await fetch(`${API}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
             const data = await res.json();
 
             if (data.status === "OK") {
-                sessionEmail = u; sessionRol = data.rol;
-                sessionNombre = u.split('@')[0].toUpperCase();
+                uEmail = u; uRol = data.rol;
+                uNombre = u.split('@')[0].toUpperCase();
                 
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('panel-principal').classList.remove('hidden');
-                document.getElementById('saludo').innerText = `Bienvenido, ${sessionNombre}`;
-                document.getElementById('fecha-h').valueAsDate = new Date(); // Botón "Hoy" automático
+                document.getElementById('view-login').className = "hidden";
+                document.getElementById('view-panel').className = "card";
+                document.getElementById('txt-user').innerText = `Panel: ${uNombre}`;
+                document.getElementById('f-fecha').valueAsDate = new Date();
 
-                // Si es ADMIN, mostrar controles de bloqueo
-                if (sessionRol === "ADMIN") document.getElementById('admin-controls').classList.remove('hidden');
+                if(uRol === "ADMIN") document.getElementById('admin-tools').className = "";
                 
-                actualizarVista();
-            } else { alert("Credenciales incorrectas."); }
-        }
+                cargarDatos();
+            } else { alert("Credenciales incorrectas"); }
+        } catch(e) { alert("Error de conexión con el script."); }
+    }
 
-        // 2. CARGA: Envía todos los campos a la planilla
-        async function cargarHoras() {
-            const payload = {
-                type: "carga", n: sessionNombre, u: sessionEmail,
-                fecha: document.getElementById('fecha-h').value,
-                tk: document.getElementById('tk-h').value,
-                desde: document.getElementById('desde-h').value,
-                hasta: document.getElementById('hasta-h').value,
-                h: document.getElementById('cant-h').value,
-                tipo: document.getElementById('tipo-h').value,
-                mes: document.getElementById('mes-h').value,
-                sug: document.getElementById('sug-h').value
-            };
-            await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Registro cargado.");
-            actualizarVista();
-        }
+    // 2. ENVIAR CARGA
+    async function enviarRegistro() {
+        const payload = {
+            type: "carga", n: uNombre, u: uEmail,
+            fecha: document.getElementById('f-fecha').value,
+            tk: document.getElementById('f-tk').value,
+            desde: document.getElementById('f-ini').value,
+            hasta: document.getElementById('f-fin').value,
+            h: document.getElementById('f-hs').value,
+            tipo: document.getElementById('f-tipo').value,
+            mes: document.getElementById('f-mes').value,
+            sug: document.getElementById('f-sug').value
+        };
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        alert("¡Registro enviado!");
+        cargarDatos();
+    }
 
-        // 3. AUDITORÍA Y SEMÁFORO: Filtra por usuario y suma horas
-        async function actualizarVista() {
-            const res = await fetch(URL_API + "?action=read");
-            const registros = await res.json();
-            const lista = document.getElementById('lista-auditoria');
-            const semaforo = document.getElementById('semaforo');
-            const mesSeleccionado = document.getElementById('mes-h').value;
-            
-            lista.innerHTML = "";
-            let totalHorasMes = 0;
+    // 3. ACTUALIZAR LISTA Y SEMÁFORO
+    async function cargarDatos() {
+        const res = await fetch(`${API}?action=read`);
+        const registros = await res.json();
+        const lista = document.getElementById('lista-auditoria');
+        const semaforo = document.getElementById('status-semaforo');
+        const mesFiltro = document.getElementById('f-mes').value;
+        
+        lista.innerHTML = "";
+        let sumaHoras = 0;
 
-            registros.forEach(r => {
-                if (r[0] === "DATA") {
-                    const [tag, nombre, email, mes, fecha, tk, ini, fin, horas, tipo, sug] = r;
+        registros.forEach(r => {
+            if (r[0] === "DATA") {
+                const [tag, nom, email, mes, fecha, tk, ini, fin, hs, tipo, sug] = r;
 
-                    // REGLA: Admin ve todo. Usuario común solo lo suyo.
-                    if (sessionRol === "ADMIN" || email === sessionEmail) {
-                        
-                        // Suma para el semáforo si coincide el mes
-                        if (mes === mesSeleccionado) totalHorasMes += parseFloat(horas);
+                // Solo ve lo suyo, o el Admin ve todo
+                if (uRol === "ADMIN" || email === uEmail) {
+                    if (mes === mesFiltro) sumaHoras += parseFloat(hs);
 
-                        lista.innerHTML += `
-                            <div class="audit-item">
-                                <div>
-                                    <strong>${nombre}</strong> (${mes})<br>
-                                    <small>${fecha} | TK: ${tk} | ${horas}hs (${tipo})</small><br>
-                                    <i style="font-size:0.8em; color:#666;">${sug || ""}</i>
-                                </div>
-                                ${sessionRol === "ADMIN" ? `<button style="width:auto; background:red" onclick="borrarRegistro('${email}','${tk}')">🗑️</button>` : ''}
-                            </div>`;
-                    }
+                    lista.innerHTML += `
+                        <div class="registro-card">
+                            <div>
+                                <strong>${nom}</strong> <span style="font-size:10px;">(${mes})</span><br>
+                                <small>${fecha} | TK: ${tk} | ${hs}hs (${tipo})</small><br>
+                                <em style="font-size:11px; color:#777;">${sug || ''}</em>
+                            </div>
+                            ${uRol === "ADMIN" ? `<button style="width:auto; padding:5px 10px; background:red;" onclick="borrar('${email}','${tk}')">🗑️</button>` : ''}
+                        </div>`;
                 }
-            });
-
-            // LÓGICA SEMÁFORO (Tope 30hs)
-            semaforo.innerText = `Total ${mesSeleccionado}: ${totalHorasMes}hs`;
-            if (totalHorasMes > 30) {
-                semaforo.className = "semaforo rojo";
-                semaforo.innerText += " - ¡LÍMITE DE 30HS SUPERADO!";
-            } else {
-                semaforo.className = "semaforo verde";
             }
-        }
+        });
 
-        // 4. FUNCIONES DE ADMIN (Borrar y Bloquear)
-        async function borrarRegistro(u, tk) {
-            if(!confirm("¿Borrar registro?")) return;
-            await fetch(URL_API, { method: 'POST', body: JSON.stringify({type: "borrar_registro", u, tk}) });
-            actualizarVista();
-        }
+        semaforo.innerText = `Horas en ${mesFiltro}: ${sumaHoras}hs`;
+        semaforo.className = sumaHoras > 30 ? "semaforo rojo" : "semaforo verde";
+    }
 
-        async function cambiarEstadoSitio(nuevoEstado) {
-            await fetch(URL_API, { method: 'POST', body: JSON.stringify({type: "toggle_sitio", estado: nuevoEstado}) });
-            alert("El sitio ahora está: " + nuevoEstado);
-        }
-    </script>
+    async function borrar(u, tk) {
+        if(!confirm("¿Borrar?")) return;
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"borrar_registro", u:u, tk:tk}) });
+        cargarDatos();
+    }
+
+    async function setEstado(est) {
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"toggle_sitio", estado:est}) });
+        alert("Sitio: " + est);
+    }
+</script>
+
 </body>
 </html>
