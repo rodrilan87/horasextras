@@ -4,178 +4,100 @@
 <meta charset="UTF-8">
 <title>Horas Extras</title>
 <style>
-  body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
-  input, select, textarea, button { margin: 5px 0; width: 100%; }
-  textarea { resize: none; }
-  .hidden { display: none; }
-  .ok { color: green; }
-  .err { color: red; }
+body { font-family: Arial; max-width: 800px; margin: auto; }
+input, select, textarea, button { width: 100%; margin: 5px 0; }
+.hidden { display: none; }
+.ok { color: green; }
+.err { color: red; }
 </style>
 </head>
 
 <body>
 
-<h2>Ingreso al sistema</h2>
+<h2>Login</h2>
 
 <input id="email" placeholder="email">
 <input id="clave" type="password" placeholder="clave">
 
-<button onclick="login()">Ingresar</button>
-<button onclick="registrar()">Registrarse (@osde)</button>
+<button onclick="login()">Entrar</button>
+<button onclick="registrar()">Registrarse</button>
 
 <p id="msg"></p>
 
 <hr>
 
 <div id="app" class="hidden">
+  <h3>Cargar horas</h3>
 
-  <h3>Carga de horas extras</h3>
-
-  <label>Fecha</label>
   <input type="date" id="fecha">
-  <button onclick="hoy()">HOY</button>
-
-  <label>Hora desde</label>
   <input type="time" id="desde">
-
-  <label>Hora hasta</label>
   <input type="time" id="hasta">
 
-  <label>Tipo</label>
   <select id="porcentaje">
     <option value="50%">50%</option>
     <option value="100%">100%</option>
   </select>
 
-  <label>TK / ID</label>
-  <input id="tk">
+  <input id="tk" placeholder="TK / ID">
+  <textarea id="sugerencia" maxlength="50"></textarea>
 
-  <label>Sugerencia (máx 50 palabras)</label>
-  <textarea id="sugerencia" maxlength="300"></textarea>
+  <button onclick="guardar()">Guardar</button>
 
-  <button onclick="guardar()">Guardar horas</button>
-
-  <hr>
-  <h3>Mis registros</h3>
+  <h3>Mis horas</h3>
   <div id="tabla"></div>
-
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxnvmq6jef8IWrjTFt8EjKvOvE7w7tY6FUQtfOMqMvxPseo42YL8sTsHwD5qSeLitdL2Q/exec";
-
-let ROL = "";
+const API = "https://script.google.com/macros/s/AKfycbzHqdjYoq8x5pdruKFS6UVjlxkbwcVZf1Ozgzd8oTvQleoKlQRdkrecBhvhLwtMlyxP5Q/exec";
 let EMAIL = "";
 
-function hoy() {
-  document.getElementById("fecha").value =
-    new Date().toISOString().split("T")[0];
-}
-
 function login() {
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "login",
-      email: email.value.trim(),
-      clave: clave.value.trim()
-    })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (!d.ok) {
-      msg.innerHTML = `<span class="err">${d.error}</span>`;
-      return;
-    }
-    ROL = d.rol;
-    EMAIL = d.email;
-    msg.innerHTML = `<span class="ok">Login OK (${ROL})</span>`;
-    document.getElementById("app").classList.remove("hidden");
-    cargarMisHoras();
-  });
+  fetch(`${API}?action=login&email=${email.value}&clave=${clave.value}`)
+    .then(r => r.json())
+    .then(d => {
+      if (!d.ok) {
+        msg.innerHTML = `<span class="err">${d.error}</span>`;
+        return;
+      }
+      EMAIL = d.email;
+      app.classList.remove("hidden");
+      msg.innerHTML = `<span class="ok">Login OK (${d.rol})</span>`;
+      listar();
+    });
 }
 
 function registrar() {
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "register",
-      email: email.value.trim(),
-      clave: clave.value.trim()
-    })
-  })
-  .then(r => r.json())
-  .then(d => {
-    msg.innerHTML = d.ok
-      ? `<span class="ok">Usuario registrado</span>`
-      : `<span class="err">${d.error}</span>`;
-  });
+  fetch(`${API}?action=register&email=${email.value}&clave=${clave.value}`)
+    .then(r => r.json())
+    .then(d => {
+      msg.innerHTML = d.ok
+        ? `<span class="ok">Registrado</span>`
+        : `<span class="err">${d.error}</span>`;
+    });
 }
 
 function guardar() {
-  const d = document.getElementById;
-
   const horas =
-    (new Date(`1970-01-01T${d("hasta").value}`) -
-     new Date(`1970-01-01T${d("desde").value}`)) / 3600000;
+    (new Date(`1970-01-01T${hasta.value}`) -
+     new Date(`1970-01-01T${desde.value}`)) / 3600000;
 
-  if (horas <= 0) {
-    alert("Horario inválido");
-    return;
-  }
-
-  fetch(API, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "cargarHoras",
-      rol: ROL,
-      email: EMAIL,
-      fecha: d("fecha").value,
-      desde: d("desde").value,
-      hasta: d("hasta").value,
-      horas: horas,
-      porcentaje: d("porcentaje").value,
-      sugerencia: d("sugerencia").value,
-      tk: d("tk").value
-    })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.ok) {
-      alert("Horas guardadas");
-      cargarMisHoras();
-    } else {
-      alert(d.error);
-    }
-  });
+  fetch(`${API}?action=cargarHoras&email=${EMAIL}&fecha=${fecha.value}&desde=${desde.value}&hasta=${hasta.value}&horas=${horas}&porcentaje=${porcentaje.value}&sugerencia=${sugerencia.value}&tk=${tk.value}`)
+    .then(r => r.json())
+    .then(() => listar());
 }
 
-function cargarMisHoras() {
-  fetch(`${API}?email=${EMAIL}`)
+function listar() {
+  fetch(`${API}?action=listar&email=${EMAIL}`)
     .then(r => r.json())
     .then(data => {
-      if (!Array.isArray(data)) return;
-
-      let html = "<table border='1'><tr><th>Fecha</th><th>Desde</th><th>Hasta</th><th>Horas</th><th>%</th><th>Mes</th><th>TK</th></tr>";
-
+      let html = "<table border=1><tr><th>Fecha</th><th>Horas</th><th>%</th><th>Mes</th></tr>";
       data.forEach(r => {
-        html += `<tr>
-          <td>${r[3]}</td>
-          <td>${r[4]}</td>
-          <td>${r[5]}</td>
-          <td>${r[6]}</td>
-          <td>${r[7]}</td>
-          <td>${r[9]}</td>
-          <td>${r[10]}</td>
-        </tr>`;
+        html += `<tr><td>${r[3]}</td><td>${r[6]}</td><td>${r[7]}</td><td>${r[9]}</td></tr>`;
       });
-
-      html += "</table>";
-      tabla.innerHTML = html;
+      tabla.innerHTML = html + "</table>";
     });
 }
 </script>
 
 </body>
 </html>
-
