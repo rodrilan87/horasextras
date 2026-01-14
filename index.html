@@ -1,104 +1,252 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Horas Extras</title>
 
 <style>
-body {
+:root {
+  --azul: #0a1a2f;
+  --azul-claro: #eef3fb;
+  --verde: #bff0c6;
+  --verde-fuerte: #39b36e;
+  --amarillo: #ffeaa7;
+  --rojo: #ffb3b3;
+}
+
+* {
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
-  max-width: 700px;
+}
+
+body {
+  margin: 0;
+  background: var(--azul-claro);
+}
+
+/* ===== LOGIN ===== */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  background: white;
+  width: 380px;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  text-align: center;
+}
+
+.login-icon {
+  width: 56px;
+  height: 56px;
   margin: auto;
+  border-radius: 50%;
+  background: #1e5eff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 26px;
 }
-input, select, textarea, button {
+
+.login-card h2 {
+  margin: 15px 0 5px;
+}
+
+.login-card p {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.login-card input {
   width: 100%;
-  margin: 6px 0;
-  padding: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
 }
-.hidden { display: none; }
-.ok { color: green; }
-.err { color: red; }
+
+.login-card button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--azul);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.login-card .link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login-card .link span {
+  color: #1e5eff;
+  cursor: pointer;
+}
+
+#error {
+  color: red;
+  margin-top: 10px;
+}
+
+/* ===== APP ===== */
+.app {
+  display: none;
+  padding: 30px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* FORM */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.form-row input,
+.form-row select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.form-row button {
+  background: var(--azul);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* SUGERENCIAS */
+textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+/* SEMAFORO */
+.semaforo {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.semaforo div {
+  padding: 15px;
+  text-align: center;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.verde { background: var(--verde); }
+.amarillo { background: var(--amarillo); }
+.rojo { background: var(--rojo); }
 </style>
 </head>
 
 <body>
 
-<h2>Login</h2>
+<!-- LOGIN -->
+<div class="login-container" id="login">
+  <div class="login-card">
+    <div class="login-icon">🕒</div>
+    <h2>Bienvenido</h2>
+    <p>Ingresá para gestionar tus horas extras</p>
 
-<input id="email" placeholder="email">
-<input id="clave" type="password" placeholder="clave">
+    <input id="email" placeholder="tu@email.com">
+    <input id="clave" type="password" placeholder="Contraseña">
 
-<button onclick="login()">Entrar</button>
-<button onclick="registrar()">Registrarse</button>
+    <button onclick="login()">Iniciar sesión</button>
 
-<p id="msg"></p>
+    <div class="link">
+      ¿No tenés cuenta?
+      <span onclick="registrar()">Registrate aquí</span>
+    </div>
 
-<hr>
+    <div id="error"></div>
+  </div>
+</div>
 
-<div id="app" class="hidden">
+<!-- APP -->
+<div class="app" id="app">
 
-  <h3>Cargar horas extras</h3>
+  <div class="card">
+    <div class="form-row">
+      <input id="usuario" disabled>
+      <input type="date" id="fecha">
+      <input type="time" id="desde">
+      <input type="time" id="hasta">
+      <input id="tk" placeholder="TK">
+      <select id="porcentaje">
+        <option value="50%">50%</option>
+        <option value="100%">100%</option>
+      </select>
+      <button onclick="guardar()">Guardar</button>
+    </div>
 
-  <label>Fecha</label>
-  <input type="date" id="fecha">
+    <textarea id="sugerencia" maxlength="50" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
 
-  <label>Hora desde</label>
-  <input type="time" id="desde">
-
-  <label>Hora hasta</label>
-  <input type="time" id="hasta">
-
-  <label>Tipo</label>
-  <select id="porcentaje">
-    <option value="50%">50%</option>
-    <option value="100%">100%</option>
-  </select>
-
-  <label>TK / ID</label>
-  <input id="tk">
-
-  <label>Sugerencia (máx 50 palabras)</label>
-  <textarea id="sugerencia" maxlength="50"></textarea>
-
-  <button onclick="guardar()">Guardar horas</button>
-
-  <hr>
-
-  <h3>Mis registros</h3>
-  <div id="tabla"></div>
+    <div class="semaforo">
+      <div class="verde">0 a 15 hs</div>
+      <div class="amarillo">16 a 25 hs</div>
+      <div class="rojo">26 a 30 hs</div>
+    </div>
+  </div>
 
 </div>
 
 <script>
+/* ===============================
+   LINK DEL BACKEND (Apps Script)
+   =============================== */
 const API = "https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
 
-let EMAIL = "";
-
+/* ===== LOGIN ===== */
 function login() {
   fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
     .then(d => {
       if (!d.ok) {
-        msg.innerHTML = `<span class="err">${d.error}</span>`;
+        error.textContent = d.error;
         return;
       }
-      EMAIL = d.email;
-      app.classList.remove("hidden");
-      msg.innerHTML = `<span class="ok">Login OK (${d.rol})</span>`;
-      listar();
+      usuario.value = d.email;
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "block";
     });
 }
 
+/* ===== REGISTRO ===== */
 function registrar() {
   fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
     .then(d => {
-      msg.innerHTML = d.ok
-        ? `<span class="ok">Usuario registrado</span>`
-        : `<span class="err">${d.error}</span>`;
+      error.textContent = d.ok
+        ? "Usuario registrado. Ahora podés iniciar sesión."
+        : d.error;
     });
 }
 
+/* ===== GUARDAR HORAS ===== */
 function guardar() {
   const horas =
     (new Date(`1970-01-01T${hasta.value}`) -
@@ -111,7 +259,7 @@ function guardar() {
 
   fetch(
     `${API}?action=cargarHoras` +
-    `&email=${encodeURIComponent(EMAIL)}` +
+    `&email=${encodeURIComponent(usuario.value)}` +
     `&fecha=${encodeURIComponent(fecha.value)}` +
     `&desde=${encodeURIComponent(desde.value)}` +
     `&hasta=${encodeURIComponent(hasta.value)}` +
@@ -119,38 +267,11 @@ function guardar() {
     `&porcentaje=${encodeURIComponent(porcentaje.value)}` +
     `&sugerencia=${encodeURIComponent(sugerencia.value)}` +
     `&tk=${encodeURIComponent(tk.value)}`
-  )
-  .then(r => r.json())
-  .then(() => listar());
-}
-
-function listar() {
-  fetch(`${API}?action=listar&email=${encodeURIComponent(EMAIL)}`)
-    .then(r => r.json())
-    .then(data => {
-      let html = `
-        <table border="1" width="100%">
-        <tr>
-          <th>Fecha</th>
-          <th>Horas</th>
-          <th>%</th>
-          <th>Mes</th>
-          <th>TK</th>
-        </tr>`;
-      data.forEach(r => {
-        html += `
-          <tr>
-            <td>${r[3]}</td>
-            <td>${r[6]}</td>
-            <td>${r[7]}</td>
-            <td>${r[9]}</td>
-            <td>${r[10]}</td>
-          </tr>`;
-      });
-      tabla.innerHTML = html + "</table>";
-    });
+  ).then(() => alert("Horas guardadas"));
 }
 </script>
 
 </body>
 </html>
+
+
