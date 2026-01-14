@@ -3,221 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA HORAS EXTRAS - OSDE</title>
+    <title>SISTEMA GESTIÓN HORAS EXTRAS - OSDE</title>
     <style>
-        :root { --navy: #2c3e50; --orange: #f39c12; --green: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
-        .card { background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 500px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); border-top: 6px solid var(--navy); margin-top: 20px; height: fit-content; }
-        h2, h3 { text-align: center; color: var(--navy); margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; color: #666; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
-        .btn-navy { background: var(--navy); }
-        .btn-orange { background: var(--orange); }
-        .btn-green { background: var(--green); }
-        .btn-red { background: #e74c3c; font-size: 12px; }
-        .oculto { display: none; }
-        .footer-link { text-align: center; margin-top: 20px; color: #3498db; cursor: pointer; font-size: 14px; }
+        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --gray: #f4f4f4; --green: #27ae60; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e9ecef; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; }
         
-        /* Tabla de registros */
-        .tabla-container { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; color: var(--navy); }
-        .search-box { background: #fffde7; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe082; }
+        /* Cards y Estética */
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 6px solid var(--navy); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gray); padding-bottom: 15px; margin-bottom: 20px; }
+        .logo-text { font-size: 24px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+        
+        /* Formularios */
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        
+        /* Botones */
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-main { background: var(--sky); color: white; width: 100%; font-size: 16px; }
+        .btn-main:hover { background: var(--navy); }
+        .btn-logout { background: #dc3545; color: white; padding: 8px 15px; font-size: 12px; }
+        
+        /* Tabla y Badge */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th { background: var(--navy); color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .b-100 { background: #d4edda; color: #155724; }
+        .b-50 { background: #fff3cd; color: #856404; }
+        
+        .oculto { display: none; }
+        .search-bar { margin-bottom: 15px; background: var(--gray); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-box" class="card">
-        <h2>SISTEMA OSDE</h2>
+<div class="container">
+    <div id="auth-section" class="card" style="max-width: 400px; margin: 50px auto;">
+        <div class="logo-text" style="text-align: center; margin-bottom: 20px;">OSDE <span style="color:var(--sky)">HORAS</span></div>
+        
         <div id="login-form">
-            <input type="email" id="l_email" placeholder="Email corporativo">
-            <input type="password" id="l_pass" placeholder="Contraseña">
-            <button class="btn btn-navy" onclick="app.login()">INGRESAR</button>
-            <div class="footer-link" onclick="app.toggle()">¿No tenés cuenta? Registrate acá</div>
+            <label>Email Corporativo</label>
+            <input type="email" id="l_email" placeholder="ejemplo@osde.com.ar">
+            <label>Contraseña</label>
+            <input type="password" id="l_pass" placeholder="••••••••">
+            <button class="btn btn-main" onclick="app.login()">Entrar al Sistema</button>
+            <p style="text-align:center; font-size:13px; margin-top:15px;">
+                ¿Nuevo? <span onclick="app.toggleAuth()" style="color:var(--sky); cursor:pointer; font-weight:bold;">Registrate aquí</span>
+            </p>
         </div>
+
         <div id="reg-form" class="oculto">
-            <h3>NUEVO USUARIO</h3>
-            <input type="text" id="r_name" placeholder="Nombre Completo">
-            <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-            <input type="password" id="r_pass" placeholder="Crear Contraseña">
-            <button class="btn btn-green" onclick="app.register()">SOLICITAR ACCESO</button>
-            <div class="footer-link" onclick="app.toggle()">Volver al Login</div>
+            <label>Nombre y Apellido</label>
+            <input type="text" id="r_name">
+            <label>Email (@osde.com.ar)</label>
+            <input type="email" id="r_email">
+            <label>Contraseña</label>
+            <input type="password" id="r_pass">
+            <button class="btn btn-main" style="background:var(--green)" onclick="app.register()">Crear mi cuenta</button>
+            <p onclick="app.toggleAuth()" style="text-align:center; cursor:pointer; font-size:13px; margin-top:15px;">Volver al inicio</p>
         </div>
     </div>
 
-    <div id="dash" class="card oculto" style="max-width: 700px; border-top-color: var(--orange);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="txt_bienvenida">Hola!</h3>
-            <button class="btn btn-red" style="width: auto; padding: 5px 15px;" onclick="location.reload()">SALIR</button>
-        </div>
-
-        <hr>
-
-        <div id="form-carga">
-            <h4>Cargar Nueva Jornada</h4>
-            <div class="form-group">
-                <label>Detalle (Día y horario):</label>
-                <input type="text" id="c_det" placeholder="Ej: Lunes 13 - 18:00 a 20:30">
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Tickets:</label>
-                    <input type="number" id="c_tk" value="0">
+    <div id="main-section" class="oculto">
+        <div class="card">
+            <div class="header">
+                <div>
+                    <div class="logo-text">OSDE <span style="color:var(--sky)">GESTIÓN</span></div>
+                    <div id="user-info" style="font-size: 14px; color: #666;"></div>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Tipo:</label>
-                    <select id="c_tip">
-                        <option value="100">Al 100%</option>
-                        <option value="50">Al 50%</option>
+                <button class="btn btn-logout" onclick="location.reload()">Cerrar Sesión</button>
+            </div>
+
+            <div class="grid-form">
+                <div class="full-width">
+                    <label>Fecha y Detalle de la Tarea</label>
+                    <input type="text" id="c_det" placeholder="Ej: Sabado 17/01 - Guardía técnica o Proyecto X">
+                </div>
+                <div>
+                    <label>Cantidad de Horas</label>
+                    <input type="number" id="c_horas" step="0.5" placeholder="Ej: 2.5">
+                </div>
+                <div>
+                    <label>Tipo de Hora</label>
+                    <select id="c_tipo">
+                        <option value="100">Al 100% (Feriados/Domingos)</option>
+                        <option value="50">Al 50% (Sábados/Días hábiles)</option>
                     </select>
                 </div>
+                <div class="full-width">
+                    <label>Tickets asociados / Observaciones</label>
+                    <input type="text" id="c_tk" placeholder="TK-12345 / Sin tickets">
+                </div>
+                <button class="btn btn-main full-width" style="background:var(--orange)" id="btn-save" onclick="app.save()">Guardar Jornada en Base de Datos</button>
             </div>
-            <button class="btn btn-orange" id="btn-save" onclick="app.save()">GUARDAR EN EXCEL</button>
         </div>
 
-        <div class="tabla-container">
-            <h4>Mis Registros</h4>
-            <div class="search-box">
-                <input type="text" id="buscador" placeholder="🔍 Buscar por fecha o detalle..." onkeyup="app.filtrar()">
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" id="filtro" placeholder="🔍 Filtrar por nombre, detalle o fecha..." onkeyup="app.filtrar()">
             </div>
-            <table id="tabla-horas">
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Detalle</th>
-                        <th>TK</th>
-                        <th>%</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-cargas">
-                    </tbody>
-            </table>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="th-usuario" class="oculto">Usuario</th>
+                            <th>Fecha Registro</th>
+                            <th>Detalle de Tarea</th>
+                            <th>Hs</th>
+                            <th>Tipo</th>
+                            <th>Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // PONE TU LINK DE GOOGLE de APPSCRIPT ABAJO
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxsEewuDZIrtrEc-0FmbxsxHcpIKzWY7MtoFybBGxvXY-2nfEJGJ3J_tX3-8o7itVc/exec";
+<script>
+    // URL DE TU APP SCRIPT (LA QUE TERMINA EN /exec)
+    const WEB_APP_URL = "TU_NUEVO_LINK_AQUÍ";
 
-        const app = {
-            user: null,
-            fullData: [],
+    const app = {
+        currentUser: null,
+        dbCache: [],
 
-            toggle() {
-                document.getElementById('login-form').classList.toggle('oculto');
-                document.getElementById('reg-form').classList.toggle('oculto');
-            },
+        toggleAuth() {
+            document.getElementById('login-form').classList.toggle('oculto');
+            document.getElementById('reg-form').classList.toggle('oculto');
+        },
 
-            async register() {
-                const n = document.getElementById('r_name').value;
-                const m = document.getElementById('r_email').value.toLowerCase().trim();
-                const p = document.getElementById('r_pass').value;
-                if(!m.endsWith('@osde.com.ar')) return alert("Solo emails @osde.com.ar");
-                if(!n || !p) return alert("Completa todos los campos");
-                
-                try {
-                    await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({type: "registro", n, m, p})
-                    });
-                    alert("¡Registrado con éxito!");
-                    this.toggle();
-                } catch(e) { alert("Error al conectar."); }
-            },
+        async login() {
+            const m = document.getElementById('l_email').value.toLowerCase().trim();
+            const p = document.getElementById('l_pass').value;
 
-            async login() {
-                const m = document.getElementById('l_email').value.toLowerCase().trim();
-                const p = document.getElementById('l_pass').value;
-
-                // Admin bypass
-                if(m === "rodri@gmx.com" && p === "1234") {
-                    return this.entrar({n: "Rodrigo (Admin)", m: m, admin: true});
-                }
-
-                try {
-                    const res = await fetch(WEB_APP_URL);
-                    const db = await res.json();
-                    this.fullData = db;
-                    const u = db.find(r => r[0] === "USER" && r[2] === m && String(r[3]) === String(p));
-                    
-                    if(u) {
-                        this.entrar({n: u[1], m: u[2], admin: false});
-                    } else {
-                        alert("Datos incorrectos.");
-                    }
-                } catch(e) { alert("Error de base de datos."); }
-            },
-
-            entrar(u) {
-                this.user = u;
-                document.getElementById('auth-box').classList.add('oculto');
-                document.getElementById('dash').classList.remove('oculto');
-                document.getElementById('txt_bienvenida').innerText = "Hola, " + u.n;
-                this.cargarTabla();
-            },
-
-            async save() {
-                const d = document.getElementById('c_det').value;
-                const tk = document.getElementById('c_tk').value;
-                const tip = document.getElementById('c_tip').value;
-                if(!d) return alert("Falta el detalle");
-
-                document.getElementById('btn-save').innerText = "GUARDANDO...";
-                document.getElementById('btn-save').disabled = true;
-
-                try {
-                    await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({
-                            type: "carga",
-                            n: this.user.n,
-                            u: this.user.m,
-                            d: d,
-                            t: tk,
-                            p: tip
-                        })
-                    });
-                    alert("Guardado correctamente!");
-                    location.reload(); // Recargamos para ver la nueva fila
-                } catch(e) { alert("Error al guardar."); }
-            },
-
-            cargarTabla() {
-                const lista = document.getElementById('lista-cargas');
-                lista.innerHTML = "";
-                
-                // Si es admin ve todo, si no, solo lo suyo
-                const filtrado = this.fullData.filter(r => {
-                    if(this.user.admin) return r[0] === "DATA";
-                    return r[0] === "DATA" && r[2] === this.user.m;
-                });
-
-                filtrado.reverse().forEach(r => {
-                    const fecha = r[4] ? new Date(r[4]).toLocaleDateString() : '---';
-                    lista.innerHTML += `
-                        <tr>
-                            <td>${fecha}</td>
-                            <td>${r[5]}</td>
-                            <td>${r[6] || 0}</td>
-                            <td>${r[7]}%</td>
-                        </tr>
-                    `;
-                });
-            },
-
-            filtrar() {
-                const busqueda = document.getElementById('buscador').value.toLowerCase();
-                const filas = document.querySelectorAll('#lista-cargas tr');
-                filas.forEach(f => {
-                    f.style.display = f.innerText.toLowerCase().includes(busqueda) ? "" : "none";
-                });
+            // FIX: Acceso directo Admin @gmx
+            if(m === "rodri@gmx.com" && p === "1234") {
+                this.currentUser = { n: "Rodrigo (Admin)", m: m, admin: true };
+                return this.iniciarSistema();
             }
-        };
-    </script>
+
+            try {
+                const res = await fetch(WEB_APP_URL);
+                const data = await res.json();
+                this.dbCache = data;
+                
+                const user = data.find(r => r[0] === "USER" && r[2] === m && String(r[3]) === String(p));
+                if(user) {
+                    this.currentUser = { n: user[1], m: user[2], admin: false };
+                    this.iniciarSistema();
+                } else {
+                    alert("Credenciales incorrectas.");
+                }
+            } catch(e) { alert("Error conectando a OSDE Cloud."); }
+        },
+
+        async register() {
+            const n = document.getElementById('r_name').value;
+            const m = document.getElementById('r_email').value.toLowerCase().trim();
+            const p = document.getElementById('r_pass').value;
+
+            if(!m.endsWith("@osde.com.ar")) return alert("Debe usar email @osde.com.ar");
+            if(!n || !p) return alert("Complete todos los campos.");
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({type: "registro", n, m, p})
+                });
+                alert("Usuario creado. Ya puede ingresar.");
+                this.toggleAuth();
+            } catch(e) { alert("Error en registro."); }
+        },
+
+        iniciarSistema() {
+            document.getElementById('auth-section').classList.add('oculto');
+            document.getElementById('main-section').classList.remove('oculto');
+            document.getElementById('user-info').innerText = "Conectado como: " + this.currentUser.n;
+            if(this.currentUser.admin) document.getElementById('th-usuario').classList.remove('oculto');
+            this.renderTabla();
+        },
+
+        async renderTabla() {
+            // Si la cache está vacía (login admin), buscamos datos
+            if(this.dbCache.length === 0) {
+                const res = await fetch(WEB_APP_URL);
+                this.dbCache = await res.json();
+            }
+
+            const body = document.getElementById('tabla-body');
+            body.innerHTML = "";
+
+            const filtrados = this.dbCache.filter(r => {
+                if(this.currentUser.admin) return r[0] === "DATA";
+                return r[0] === "DATA" && r[2] === this.currentUser.m;
+            });
+
+            filtrados.reverse().forEach(r => {
+                const badgeClass = r[7] == "100" ? "b-100" : "b-50";
+                body.innerHTML += `
+                    <tr>
+                        ${this.currentUser.admin ? `<td><b>${r[1]}</b></td>` : ''}
+                        <td>${new Date(r[4]).toLocaleDateString()}</td>
+                        <td>${r[5]}</td>
+                        <td>${r[6]} hs</td>
+                        <td><span class="badge ${badgeClass}">${r[7]}%</span></td>
+                        <td>${r[8] || '-'}</td>
+                    </tr>
+                `;
+            });
+        },
+
+        async save() {
+            const det = document.getElementById('c_det').value;
+            const hs = document.getElementById('c_horas').value;
+            const tipo = document.getElementById('c_tipo').value;
+            const tk = document.getElementById('c_tk').value;
+
+            if(!det || !hs) return alert("Complete el detalle y las horas.");
+
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "PROCESANDO...";
+            btn.disabled = true;
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        type: "carga",
+                        n: this.currentUser.n,
+                        u: this.currentUser.m,
+                        d: det,
+                        h: hs,
+                        p: tipo,
+                        tk: tk
+                    })
+                });
+                alert("Jornada guardada con éxito.");
+                location.reload();
+            } catch(e) { alert("Error al guardar."); }
+        },
+
+        filtrar() {
+            const val = document.getElementById('filtro').value.toLowerCase();
+            const trs = document.querySelectorAll("#tabla-body tr");
+            trs.forEach(tr => {
+                tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        }
+    };
+</script>
 </body>
 </html>
