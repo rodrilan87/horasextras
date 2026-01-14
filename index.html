@@ -5,193 +5,247 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OSDE - Gestión de Horas Extras</title>
     <style>
-        :root { --osde: #00548f; --rojo: #d9534f; --verde: #5cb85c; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f7; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; max-width: 700px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        /* CONFIGURACIÓN DE COLORES Y ESTILOS OSDE */
+        :root { --osde: #00548f; --rojo: #d9534f; --verde: #5cb85c; --fondo: #f0f4f7; }
+        
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--fondo); padding: 20px; color: #333; }
+        
+        /* CONTENEDOR PRINCIPAL */
+        .card { 
+            background: white; padding: 30px; border-radius: 15px; 
+            max-width: 650px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+
+        /* DISEÑO DE FORMULARIO */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        
+        input, select, textarea, button { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; 
+        }
+
+        /* BOTONES */
         button { background: var(--osde); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .semaforo { padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: center; margin-bottom: 25px; font-size: 1.1em; }
+        .btn-reg { background: var(--verde); }
+        .btn-del { background: var(--rojo); width: auto; padding: 5px 10px; }
+
+        /* ALERTAS DE SEMÁFORO (REGLA 30 HORAS) */
+        .semaforo { padding: 15px; border-radius: 10px; color: white; font-weight: bold; text-align: center; margin-bottom: 25px; }
         .verde { background: var(--verde); }
         .rojo { background: var(--rojo); }
+
+        /* UTILIDADES */
         .hidden { display: none; }
-        .registro-card { border-left: 6px solid var(--osde); background: #f9fcff; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         label { font-size: 12px; color: var(--osde); font-weight: bold; display: block; margin-top: 5px; }
+        
+        /* ESTILO DE CADA CARGA EN EL HISTORIAL */
+        .registro-item { 
+            border-left: 6px solid var(--osde); background: #f9fcff; 
+            padding: 15px; margin-bottom: 12px; display: flex; 
+            justify-content: space-between; align-items: center; 
+            border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
     </style>
 </head>
 <body>
 
     <div class="card" id="view-login">
-        <h2 style="color:var(--osde); text-align:center;">Acceso Seguro OSDE</h2>
-        <div id="login-box">
-            <input type="email" id="email" placeholder="Usuario (@osde.com.ar / @gmx.com)">
+        <h2 style="color:var(--osde); text-align:center;">Gestión OSDE 2026</h2>
+        
+        <div id="box-login">
+            <input type="email" id="email" placeholder="Email (@osde.com.ar / @gmx.com)">
             <input type="password" id="pass" placeholder="Contraseña">
             <button onclick="login()">INGRESAR AL PANEL</button>
-            <p style="text-align:center; font-size: 14px;">¿No tienes cuenta? <a href="#" onclick="toggleView(true)">Registrarse aquí</a></p>
+            <p style="text-align:center; font-size: 14px;">¿No tienes acceso? <a href="#" onclick="toggleReg(true)">Crear cuenta</a></p>
         </div>
-        <div id="registro-box" class="hidden">
+
+        <div id="box-registro" class="hidden">
             <h3 style="color:var(--verde)">Nuevo Registro</h3>
-            <input type="email" id="reg-email" placeholder="Email (@osde.com.ar / rodri@gmx.com)">
+            <input type="email" id="reg-email" placeholder="Tu email corporativo">
             <input type="password" id="reg-pass" placeholder="Crea una contraseña">
-            <button onclick="registrar()" style="background:var(--verde)">CREAR CUENTA</button>
-            <p style="text-align:center; font-size: 14px;"><a href="#" onclick="toggleView(false)">Volver al Login</a></p>
+            <button class="btn-reg" onclick="registrar()">CONFIRMAR REGISTRO</button>
+            <p style="text-align:center; font-size: 14px;"><a href="#" onclick="toggleReg(false)">Volver al Login</a></p>
         </div>
     </div>
 
     <div class="card hidden" id="view-panel">
-        <h2 id="txt-bienvenida">Bienvenido</h2>
-        <div id="status-semaforo" class="semaforo verde">Horas este mes: 0hs</div>
+        <h2 id="txt-hola">Hola, Usuario</h2>
+        
+        <div id="semaforo-status" class="semaforo verde">Cargando datos...</div>
 
-        <div id="formulario-carga">
-            <div class="grid">
-                <div><label>Fecha del trabajo</label><input type="date" id="f-fecha"></div>
-                <div><label>Ticket ID</label><input type="text" id="f-tk" placeholder="Ej: 99881"></div>
-                <div><label>Desde</label><input type="time" id="f-ini"></div>
-                <div><label>Hasta</label><input type="time" id="f-fin"></div>
-                <div><label>Cant. Horas</label><input type="number" id="f-hs" step="0.5" placeholder="Ej: 3"></div>
-                <div><label>Recargo</label>
-                    <select id="f-tipo">
-                        <option value="100%">Recargo 100%</option>
-                        <option value="50%">Recargo 50%</option>
-                    </select>
-                </div>
+        <div class="grid">
+            <div><label>Fecha</label><input type="date" id="f-fecha"></div>
+            <div><label>Ticket ID</label><input type="text" id="f-tk" placeholder="Ej: 12345"></div>
+            <div><label>Inicio</label><input type="time" id="f-ini"></div>
+            <div><label>Fin</label><input type="time" id="f-fin"></div>
+            <div><label>Horas Totales</label><input type="number" id="f-hs" step="0.5" placeholder="Ej: 2"></div>
+            <div><label>Recargo</label>
+                <select id="f-tipo">
+                    <option value="100%">Al 100%</option>
+                    <option value="50%">Al 50%</option>
+                </select>
             </div>
-            <label>Mes de Imputación</label>
-            <select id="f-mes" onchange="actualizarAuditoria()">
-                <option value="Enero">Enero 2026</option>
-                <option value="Febrero">Febrero 2026</option>
-                <option value="Marzo">Marzo 2026</option>
-            </select>
-            <textarea id="f-sug" maxlength="300" placeholder="Comentarios o sugerencias (máx 50 palabras)"></textarea>
-            <button onclick="cargarHoras()">GUARDAR REGISTRO</button>
         </div>
+        
+        <label>Mes de Imputación</label>
+        <select id="f-mes" onchange="obtenerHistorial()">
+            <option value="Enero">Enero 2026</option>
+            <option value="Febrero">Febrero 2026</option>
+            <option value="Marzo">Marzo 2026</option>
+        </select>
+        
+        <textarea id="f-sug" maxlength="250" placeholder="Comentarios (máx 50 palabras)"></textarea>
+        <button onclick="guardarCarga()">CARGAR REGISTRO</button>
 
-        <h3 style="margin-top:30px; border-top: 1px solid #eee; padding-top: 20px;">Historial de Cargas</h3>
-        <div id="lista-auditoria"></div>
+        <h3 style="margin-top:30px; border-top: 1px solid #eee; padding-top: 20px; color: var(--osde);">Historial de Cargas</h3>
+        <div id="auditoria-lista"></div>
     </div>
 
-<script>
-    // --- IMPORTANTE: PEGA AQUÍ LA URL DE TU SCRIPT DE GOOGLE ---
-    const API_URL = "https://script.google.com/macros/s/AKfycbwbOGnLnZ2f1IpvGcUArxqKLjBD3fLh-GYA2_yRwFM5h573c5a_s3vC9aX85ggTpjgR/exec"; 
+    <script>
+        // --- 1. CONFIGURACIÓN ---
+        // Pegar aquí la URL de la implementación Versión 19
+        const API_URL = "https://script.google.com/macros/s/AKfycbxabgwlEqvNpfhM17WVkW7jg627EAQvwM9P5nopdGQveSrbNuxRq5D1MqoWXU6Ctp1_/exec"; 
 
-    let uEmail = "", uRol = "", uNombre = "";
+        let uEmail = "", uRol = "", uNombre = "";
 
-    function toggleView(showReg) {
-        document.getElementById('login-box').className = showReg ? 'hidden' : '';
-        document.getElementById('registro-box').className = showReg ? '' : 'hidden';
-    }
-
-    // 1. REGISTRAR USUARIO
-    async function registrar() {
-        const u = document.getElementById('reg-email').value.trim().toLowerCase();
-        const p = document.getElementById('reg-pass').value;
-
-        if (!u.endsWith("@osde.com.ar") && u !== "rodri@gmx.com") {
-            return alert("Solo se permiten cuentas @osde.com.ar o el administrador.");
+        // Cambiar entre Login y Registro
+        function toggleReg(show) {
+            document.getElementById('box-login').className = show ? 'hidden' : '';
+            document.getElementById('box-registro').className = show ? '' : 'hidden';
         }
-        if (p.length < 4) return alert("La contraseña es muy corta.");
 
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({type: "registro_usuario", u: u, p: p})
-        });
+        // --- 2. REGISTRAR USUARIO (POST) ---
+        async function registrar() {
+            const u = document.getElementById('reg-email').value.trim().toLowerCase();
+            const p = document.getElementById('reg-pass').value;
 
-        alert("Cuenta creada con éxito. Ahora inicia sesión.");
-        toggleView(false);
-    }
-
-    // 2. LOGIN
-    async function login() {
-        const u = document.getElementById('email').value.trim();
-        const p = document.getElementById('pass').value;
-        const btn = document.querySelector("#login-box button");
-
-        try {
-            btn.innerText = "CONECTANDO...";
-            const res = await fetch(`${API_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`);
-            const data = await res.json();
-
-            if (data.status === "OK") {
-                uEmail = u; uRol = data.rol;
-                uNombre = u.split('@')[0].toUpperCase();
-                
-                document.getElementById('view-login').classList.add('hidden');
-                document.getElementById('view-panel').classList.remove('hidden');
-                document.getElementById('txt-bienvenida').innerText = `Panel: ${uNombre}`;
-                document.getElementById('f-fecha').valueAsDate = new Date(); // Botón "Hoy" automático
-
-                actualizarAuditoria();
-            } else {
-                alert("Usuario o Contraseña incorrectos.");
-                btn.innerText = "INGRESAR AL PANEL";
+            // Validación de dominio según instrucción
+            if (!u.endsWith("@osde.com.ar") && u !== "rodri@gmx.com") {
+                return alert("Solo cuentas @osde.com.ar permitidas.");
             }
-        } catch(e) {
-            alert("Error de conexión. Verifica la URL del Script.");
-            btn.innerText = "INGRESAR AL PANEL";
+
+            // Envío de datos al script de Google
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({type: "registro_usuario", u: u, p: p})
+            });
+
+            alert("Usuario creado. Ya puedes ingresar.");
+            toggleReg(false);
         }
-    }
 
-    // 3. CARGAR HORAS
-    async function cargarHoras() {
-        const payload = {
-            type: "carga", n: uNombre, u: uEmail,
-            fecha: document.getElementById('f-fecha').value,
-            tk: document.getElementById('f-tk').value,
-            desde: document.getElementById('f-ini').value,
-            hasta: document.getElementById('f-fin').value,
-            h: document.getElementById('f-hs').value,
-            tipo: document.getElementById('f-tipo').value,
-            mes: document.getElementById('f-mes').value,
-            sug: document.getElementById('f-sug').value
-        };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        alert("Carga completada.");
-        actualizarAuditoria();
-    }
+        // --- 3. LOGIN (Técnica JSONP definitiva) ---
+        function login() {
+            const u = document.getElementById('email').value.trim();
+            const p = document.getElementById('pass').value;
+            const btn = document.querySelector("#box-login button");
 
-    // 4. ACTUALIZAR AUDITORÍA Y SEMÁFORO
-    async function actualizarAuditoria() {
-        const res = await fetch(`${API_URL}?action=read`);
-        const registros = await res.json();
-        const lista = document.getElementById('lista-auditoria');
-        const semaforo = document.getElementById('status-semaforo');
-        const mesActual = document.getElementById('f-mes').value;
-        
-        lista.innerHTML = "";
-        let sumaTotal = 0;
+            if(!u || !p) return alert("Completa los campos.");
+            btn.innerText = "VERIFICANDO...";
 
-        registros.forEach(r => {
-            if (r[0] === "DATA") {
-                const [tag, nom, email, mes, fecha, tk, ini, fin, hs, tipo, sug] = r;
+            // Nombre de función única para la respuesta
+            const callbackName = 'jsonp_osde_' + Math.round(100000 * Math.random());
+            
+            window[callbackName] = function(data) {
+                // Limpiar después de recibir respuesta
+                delete window[callbackName];
+                document.body.removeChild(script);
 
-                // Admin (@gmx) ve todo. Usuario común (@osde) ve solo lo suyo.
-                if (uRol === "ADMIN" || email.toLowerCase() === uEmail.toLowerCase()) {
-                    if (mes === mesActual) sumaTotal += parseFloat(hs);
-
-                    lista.innerHTML += `
-                        <div class="registro-card">
-                            <div>
-                                <strong>${nom}</strong> <span style="font-size:10px;">(${mes})</span><br>
-                                <small>${fecha} | TK: ${tk} | ${hs}hs (${tipo})</small><br>
-                                <em style="font-size:11px; color:#666;">${sug || ''}</em>
-                            </div>
-                            ${uRol === "ADMIN" ? `<button style="width:auto; background:red; padding: 5px 10px;" onclick="borrarRegistro('${email}','${tk}')">🗑️</button>` : ''}
-                        </div>`;
+                if (data.status === "OK") {
+                    uEmail = u; uRol = data.rol;
+                    uNombre = u.split('@')[0].toUpperCase();
+                    
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-panel').classList.remove('hidden');
+                    document.getElementById('txt-hola').innerText = `Hola, ${uNombre}`;
+                    document.getElementById('f-fecha').valueAsDate = new Date();
+                    
+                    obtenerHistorial();
+                } else {
+                    alert("Credenciales incorrectas.");
+                    btn.innerText = "INGRESAR AL PANEL";
                 }
-            }
-        });
+            };
 
-        semaforo.innerText = `Horas acumuladas (${mesActual}): ${sumaTotal}hs`;
-        semaforo.className = sumaTotal > 30 ? "semaforo rojo" : "semaforo verde";
-    }
+            // Inyectar el script para saltar el bloqueo de seguridad
+            const script = document.createElement('script');
+            script.src = `${API_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}&callback=${callbackName}`;
+            document.body.appendChild(script);
+        }
 
-    async function borrarRegistro(u, tk) {
-        if(!confirm("¿Seguro que quieres borrar este registro?")) return;
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "borrar_registro", u: u, tk: tk}) });
-        actualizarAuditoria();
-    }
-</script>
+        // --- 4. CARGAR TICKETS ---
+        async function guardarCarga() {
+            const h = document.getElementById('f-hs').value;
+            if(!h) return alert("Ingresa las horas.");
+
+            const payload = {
+                type: "carga", n: uNombre, u: uEmail,
+                fecha: document.getElementById('f-fecha').value,
+                tk: document.getElementById('f-tk').value,
+                desde: document.getElementById('f-ini').value,
+                hasta: document.getElementById('f-fin').value,
+                h: h, tipo: document.getElementById('f-tipo').value,
+                mes: document.getElementById('f-mes').value,
+                sug: document.getElementById('f-sug').value
+            };
+
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("Registro guardado con éxito.");
+            obtenerHistorial();
+        }
+
+        // --- 5. OBTENER DATOS Y SEMÁFORO ---
+        function obtenerHistorial() {
+            const callbackName = 'jsonp_historial_' + Math.round(100000 * Math.random());
+            const mesSel = document.getElementById('f-mes').value;
+
+            window[callbackName] = function(registros) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+
+                const lista = document.getElementById('auditoria-lista');
+                const semaforo = document.getElementById('semaforo-status');
+                lista.innerHTML = "";
+                let sumaTotal = 0;
+
+                registros.forEach(r => {
+                    if (r[0] === "DATA") {
+                        const [tag, nom, email, mes, fecha, tk, ini, fin, hs, tipo, sug] = r;
+
+                        // El Admin (rodri@gmx) ve todo. Los usuarios ven solo su cuenta.
+                        if (uRol === "ADMIN" || email.toLowerCase() === uEmail.toLowerCase()) {
+                            if (mes === mesSel) sumaTotal += parseFloat(hs);
+
+                            lista.innerHTML += `
+                                <div class="registro-item">
+                                    <div>
+                                        <strong>${nom}</strong> <small>(${mes})</small><br>
+                                        <small>${fecha} | TK: ${tk} | ${hs}hs (${tipo})</small>
+                                    </div>
+                                    ${uRol === "ADMIN" ? `<button class="btn-del" onclick="borrar('${email}','${tk}')">🗑️</button>` : ''}
+                                </div>`;
+                        }
+                    }
+                });
+
+                // Lógica del semáforo (30hs límite)
+                semaforo.innerText = `Horas acumuladas en ${mesSel}: ${sumaTotal}hs`;
+                semaforo.className = sumaTotal > 30 ? "semaforo rojo" : "semaforo verde";
+            };
+
+            const script = document.createElement('script');
+            script.src = `${API_URL}?action=read&callback=${callbackName}`;
+            document.body.appendChild(script);
+        }
+
+        // --- 6. BORRAR (Solo Administrador) ---
+        async function borrar(u, tk) {
+            if(!confirm("¿Borrar permanentemente?")) return;
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "borrar_registro", u: u, tk: tk}) });
+            obtenerHistorial();
+        }
+    </script>
 </body>
 </html>
