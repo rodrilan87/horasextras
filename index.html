@@ -3,142 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA HORAS OSDE</title>
+    <title>SISTEMA HORAS OSDE v32</title>
     <style>
         :root { --navy: #2c3e50; --orange: #f39c12; --green: #27ae60; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--navy); font-size: 14px; }
-        input, select { padding: 14px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 16px; }
-        .btn { border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; width: 100%; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 25px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input, select { padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        .btn { border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; text-transform: uppercase; }
         .btn-navy { background: var(--navy); }
-        .btn-orange { background: var(--orange); box-shadow: 0 4px 0 #d68910; }
-        .header { background: var(--navy); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; margin-bottom: 25px; }
-        .oculto { display: none !important; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
-        th { text-align: left; background: #f2f2f2; padding: 15px; font-size: 12px; }
-        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 15px; }
-        .tag { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
-        .tag-100 { background: var(--green); }
-        .tag-50 { background: var(--orange); }
+        .btn-orange { background: var(--orange); }
+        .oculto { display: none; }
+        .header { text-align: center; color: var(--navy); margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="container" style="max-width: 400px; margin-top: 10vh;">
-            <div class="card" style="text-align: center; border-top: 8px solid var(--navy);">
-                <h2 style="margin-bottom: 30px;">SISTEMA OSDE</h2>
-                <div id="login-box">
-                    <input type="email" id="l_email" placeholder="Email">
-                    <input type="password" id="l_pass" placeholder="Contraseña">
-                    <button class="btn btn-navy" onclick="app.login()">ENTRAR</button>
-                    <p onclick="app.toggleAuth()" style="color: #3498db; cursor: pointer; font-size: 13px; font-weight: bold; margin-top: 20px;">¿No tenés cuenta? Registrate</p>
-                </div>
-                <div id="reg-box" class="oculto">
-                    <input type="text" id="r_name" placeholder="Nombre Completo">
-                    <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-                    <input type="password" id="r_pass" placeholder="Crear Contraseña">
-                    <button class="btn btn-navy" style="background: var(--green);" onclick="app.register()">CREAR MI CUENTA</button>
-                    <p onclick="app.toggleAuth()" style="color: #666; cursor: pointer; margin-top: 15px;">Volver</p>
-                </div>
-            </div>
+    <div id="auth-box" class="card">
+        <h2 class="header">SISTEMA OSDE</h2>
+        <div id="login-form">
+            <input type="email" id="l_email" placeholder="Email corporativo">
+            <input type="password" id="l_pass" placeholder="Contraseña">
+            <button class="btn btn-navy" onclick="app.login()">INGRESAR</button>
+            <p onclick="app.toggle()" style="text-align:center; color:blue; cursor:pointer; margin-top:15px;">¿No tenés cuenta? Registrate</p>
+        </div>
+        <div id="reg-form" class="oculto">
+            <input type="text" id="r_name" placeholder="Nombre Completo">
+            <input type="email" id="r_email" placeholder="Email @osde.com.ar">
+            <input type="password" id="r_pass" placeholder="Crear Contraseña">
+            <button class="btn" style="background:var(--green)" onclick="app.register()">SOLICITAR ACCESO</button>
+            <p onclick="app.toggle()" style="text-align:center; cursor:pointer; margin-top:15px;">Volver al Login</p>
         </div>
     </div>
 
-    <div id="dashboard" class="oculto">
-        <div class="header">
-            <span id="display_user" style="font-size: 18px;"></span>
-            <button class="btn" style="width: auto; padding: 8px 15px; background: rgba(255,255,255,0.2);" onclick="location.reload()">SALIR</button>
+    <div id="dash" class="card oculto">
+        <h3 id="txt_bienvenida"></h3>
+        <div id="form_carga">
+            <label>Detalle (Día y Horas):</label>
+            <input type="text" id="c_det" placeholder="Ej: 13/01 14:00 a 16:30">
+            <label>Tickets:</label>
+            <input type="number" id="c_tk" value="0">
+            <label>Tipo:</label>
+            <select id="c_tip"><option value="100">Al 100%</option><option value="50">Al 50%</option></select>
+            <button class="btn btn-orange" onclick="app.save()">GUARDAR JORNADA</button>
         </div>
-        <div class="container">
-            <div id="panel_carga" class="card">
-                <h3 style="margin-top: 0; color: var(--navy);">📝 Cargar Nueva Jornada</h3>
-                <label>Detalle (Día y Horas):</label>
-                <input type="text" id="smart_in" placeholder="Ej: 13/01 de 14:00 a 16:30">
-                <div style="display: flex; gap: 15px;">
-                    <div style="flex: 1;"><label>Tickets:</label><input type="number" id="tk_in" value="0"></div>
-                    <div style="flex: 1;"><label>Tipo:</label><select id="tipo_in"><option value="100">Al 100%</option><option value="50">Al 50%</option></select></div>
-                </div>
-                <button class="btn btn-orange" onclick="app.saveData()">GUARDAR CARGA</button>
-            </div>
-            <div class="card">
-                <h3 style="margin-top: 0;">📂 Mis Registros</h3>
-                <div id="historial_html"></div>
-            </div>
-        </div>
+        <button class="btn" style="margin-top:20px; background:#666;" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
     <script>
+        const WEB_APP_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; // REEMPLAZAR ESTO
+
         const app = {
-            // El admin principal siempre vive en el código
-            users: JSON.parse(localStorage.getItem('osde_users')) || [{ n: "Rodrigo Botta", m: "rodri@gmx.com", p: "1234", r: "jefe", h: true }],
-            data: JSON.parse(localStorage.getItem('osde_data_v30')) || [],
             current: null,
 
-            toggleAuth() {
-                document.getElementById('login-box').classList.toggle('oculto');
-                document.getElementById('reg-box').classList.toggle('oculto');
+            toggle() {
+                document.getElementById('login-form').classList.toggle('oculto');
+                document.getElementById('reg-form').classList.toggle('oculto');
             },
 
-            register() {
+            async register() {
                 const n = document.getElementById('r_name').value;
                 const m = document.getElementById('r_email').value.toLowerCase().trim();
                 const p = document.getElementById('r_pass').value;
-                
-                if(!m.endsWith('@osde.com.ar') && m !== "rodri@gmx.com") {
-                    return alert("Solo se permiten emails con dominio @osde.com.ar");
-                }
 
-                // Si ya existe, avisar
-                if(this.users.find(u => u.m === m)) {
-                    return alert("Este email ya está registrado. Intentá loguearte.");
-                }
+                if(!m.endsWith('@osde.com.ar')) return alert("Registro solo para @osde.com.ar");
 
-                // AGREGAR Y HABILITAR AL INSTANTE
-                this.users.push({ n, m, p, r: "usuario", h: true });
-                localStorage.setItem('osde_users', JSON.stringify(this.users));
-                alert("¡Cuenta creada con éxito! Ya podés entrar.");
-                this.toggleAuth();
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({type: "registro", n, m, p})
+                });
+                alert("¡Registro exitoso! Ya podés iniciar sesión.");
+                this.toggle();
             },
 
-            login() {
+            async login() {
                 const m = document.getElementById('l_email').value.toLowerCase().trim();
                 const p = document.getElementById('l_pass').value;
-                
-                // Forzar admin si es rodri@gmx.com y la lista está vacía por algún motivo
+
+                // Admin directo
                 if(m === "rodri@gmx.com" && p === "1234") {
-                   this.current = this.users.find(u => u.m === m) || this.users[0];
-                } else {
-                   this.current = this.users.find(u => u.m === m && u.p === p);
+                    this.entrar({n: "Rodrigo (Admin)", m: m});
+                    return;
                 }
 
-                if(!this.current) {
-                    return alert("Datos incorrectos. Si acabas de registrarte, asegúrate de escribir bien el email y pass.");
+                try {
+                    const res = await fetch(WEB_APP_URL);
+                    const db = await res.json();
+                    const user = db.find(r => r[0] === "USER" && r[2] === m && r[3] === String(p));
+                    
+                    if(user) {
+                        this.entrar({n: user[1], m: user[2]});
+                    } else {
+                        alert("Usuario no encontrado o datos incorrectos.");
+                    }
+                } catch(e) {
+                    alert("Error al conectar con la base de datos.");
                 }
-
-                document.getElementById('auth-screen').classList.add('oculto');
-                document.getElementById('dashboard').classList.remove('oculto');
-                document.getElementById('display_user').innerText = "Hola, " + this.current.n;
-                this.renderHistorial();
             },
 
-            saveData() {
-                const txt = document.getElementById('smart_in').value;
-                if(!txt) return alert("Escribí el detalle");
-                this.data.push({ u: this.current.m, f: new Date().toLocaleDateString(), d: txt, t: document.getElementById('tk_in').value, p: document.getElementById('tipo_in').value });
-                localStorage.setItem('osde_data_v30', JSON.stringify(this.data));
-                document.getElementById('smart_in').value = "";
-                this.renderHistorial();
-                alert("¡Carga guardada!");
+            entrar(u) {
+                this.current = u;
+                document.getElementById('auth-box').classList.add('oculto');
+                document.getElementById('dash').classList.remove('oculto');
+                document.getElementById('txt_bienvenida').innerText = "Hola, " + u.n;
             },
 
-            renderHistorial() {
-                const mis = this.data.filter(d => d.u === this.current.m).reverse();
-                let html = "<table><thead><tr><th>Detalle</th><th>Tks</th><th>Tipo</th></tr></thead><tbody>";
-                mis.forEach(d => { html += `<tr><td>${d.d}</td><td>${d.t}</td><td><span class="tag tag-${d.p}">${d.p}%</span></td></tr>`; });
-                document.getElementById('historial_html').innerHTML = html + "</tbody></table>";
+            async save() {
+                const d = document.getElementById('c_det').value;
+                if(!d) return alert("Completá el detalle");
+
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        type: "carga",
+                        n: this.current.n,
+                        u: this.current.m,
+                        d: d,
+                        t: document.getElementById('c_tk').value,
+                        p: document.getElementById('c_tip').value
+                    })
+                });
+                alert("Jornada guardada correctamente.");
+                document.getElementById('c_det').value = "";
             }
         };
     </script>
