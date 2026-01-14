@@ -1,136 +1,84 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión Horas OSDE</title>
-    <style>
-        :root { --azul: #003057; --naranja: #E87722; --verde: #27ae60; --rojo: #e74c3c; }
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--azul); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .box-carga { display: none; text-align: left; max-width: 800px; margin: auto; }
-        .caja { padding: 15px; border-radius: 10px; margin: 10px 0; border: 2px solid #eee; }
-        .rosa { background: #fffaff; border-color: #ff00ff22; }
-        .verde { background: #fafffa; border-color: var(--verde); }
-        .naranja { border-color: var(--naranja); }
-        .hidden { display: none; }
-    </style>
-</head>
+<html>
 <body>
 
-    <div id="pantalla-login" class="card">
-        <h2 style="color: var(--azul)">OSDE Portal</h2>
-        <input type="email" id="email" placeholder="usuario@osde.com.ar o rodri@gmx.com">
-        <input type="password" id="pass" placeholder="Contraseña">
-        <button onclick="app.login()">ENTRAR</button>
-        <p id="error-msg" style="color: red; font-size: 14px; margin-top: 10px;"></p>
-    </div>
+<h2>Login</h2>
+<input id="email" placeholder="email">
+<input id="clave" type="password" placeholder="clave">
+<button onclick="login()">Entrar</button>
+<button onclick="registro()">Registrarse</button>
 
-    <div id="pantalla-app" class="card box-carga">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="saludo">Bienvenido</h3>
-            <button onclick="location.reload()" style="width: auto; background: var(--rojo); padding: 5px 15px;">SALIR</button>
-        </div>
-        
-        <p>Horas consumidas este mes: <b id="total-hs">0 / 30hs</b></p>
+<hr>
 
-        <h3>Nueva Jornada</h3>
-        <div style="display: flex; gap: 10px; align-items: flex-end;">
-            <div style="flex:1"><label>Fecha:</label><input type="date" id="f_fecha"></div>
-            <button onclick="app.setHoy()" style="width: auto; margin-bottom: 10px; background: #0076BE;">HOY</button>
-        </div>
-
-        <div class="caja rosa">
-            <label>Horas:</label>
-            <input type="number" id="f_hs" step="0.5" placeholder="Ej: 2.5">
-        </div>
-
-        <div class="caja verde">
-            <label>Tipo:</label>
-            <select id="f_tipo" style="width: 100%; padding: 10px; border-radius: 8px;">
-                <option value="50">50%</option>
-                <option value="100">100%</option>
-            </select>
-        </div>
-
-        <div class="caja naranja">
-            <label>Tarea:</label>
-            <input type="text" id="f_tk" placeholder="Descripción">
-        </div>
-
-        <button style="background: var(--naranja)" onclick="app.guardar()">GUARDAR JORNADA</button>
-    </div>
+<div id="app" style="display:none">
+  <h3>Cargar horas</h3>
+  <input type="date" id="fecha">
+  <input type="time" id="desde">
+  <input type="time" id="hasta">
+  <select id="porcentaje">
+    <option>50%</option>
+    <option>100%</option>
+  </select>
+  <input id="tk" placeholder="TK / ID">
+  <textarea id="sug" maxlength="50"></textarea>
+  <button onclick="cargar()">Guardar</button>
+</div>
 
 <script>
-    // ⚠️ CAMBIA ESTO POR TU URL DE "NUEVA IMPLEMENTACIÓN"
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYZ4X10_x2tjl3Fn8dBlBCtYuGYSY3NCydy2yHEJ7kj_lmR-nnjKZsvXc3mgE9q-mO4g/exec";
+const API = "https://script.google.com/macros/s/AKfycbzy8xVrUNVga9WADMqpIUrvIWenQqEZt--vJEZtGTXjNLT2tk-p21BYMwCWOJtjqxA0vQ/exec";
+let ROL = "";
 
-    const app = {
-        user: null,
+function login() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      email: email.value,
+      clave: clave.value
+    })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) {
+      ROL = d.rol;
+      app.style.display = "block";
+      alert("Login OK - " + ROL);
+    } else alert(d.error);
+  });
+}
 
-        async login() {
-            const email = document.getElementById('email').value.toLowerCase().trim();
-            const pass = document.getElementById('pass').value;
-            const errorElement = document.getElementById('error-msg');
+function registro() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "register",
+      email: email.value,
+      clave: clave.value
+    })
+  }).then(r => r.json()).then(alert);
+}
 
-            errorElement.innerText = "Conectando...";
+function cargar() {
+  const horas =
+    (new Date(`1970-01-01T${hasta.value}`) -
+     new Date(`1970-01-01T${desde.value}`)) / 3600000;
 
-            // 1. Lógica Admin (Foto 8 corregida: Ahora sí redirecciona)
-            if (email === "rodri@gmx.com" && pass === "1234") {
-                this.user = { nombre: "Rodrigo Daniel Botta", email: email, rol: "jefe" };
-                this.showApp();
-                return;
-            }
-
-            // 2. Lógica Usuarios @osde (Foto 2 y 7 corregidas)
-            try {
-                const res = await fetch(WEB_APP_URL);
-                const db = await res.json();
-                
-                const u = db.usuarios.find(r => r[2] === email && String(r[3]) === pass);
-                if (u) {
-                    this.user = { nombre: u[1], email: u[2], rol: u[4] };
-                    this.showApp();
-                } else {
-                    errorElement.innerText = "Usuario o clave incorrectos.";
-                }
-            } catch (e) {
-                errorElement.innerText = "Error de conexión con la base de datos. Revisa la URL.";
-                console.error(e);
-            }
-        },
-
-        showApp() {
-            document.getElementById('pantalla-login').classList.add('hidden');
-            document.getElementById('pantalla-app').style.display = 'block';
-            document.getElementById('saludo').innerText = "Bienvenido, " + this.user.nombre;
-            this.setHoy();
-        },
-
-        setHoy() {
-            document.getElementById('f_fecha').value = new Date().toISOString().split('T')[0];
-        },
-
-        async guardar() {
-            const payload = {
-                type: "carga",
-                u: this.user.email,
-                fecha: document.getElementById('f_fecha').value,
-                h: document.getElementById('f_hs').value,
-                p: document.getElementById('f_tipo').value,
-                tk: document.getElementById('f_tk').value,
-                mes: new Date().getMonth()
-            };
-
-            if(!payload.h || !payload.tk) return alert("Completa todos los campos");
-
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Jornada Guardada");
-            location.reload();
-        }
-    };
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "cargarHoras",
+      rol: ROL,
+      email: email.value,
+      fecha: fecha.value,
+      desde: desde.value,
+      hasta: hasta.value,
+      horas,
+      porcentaje: porcentaje.value,
+      sugerencia: sug.value,
+      tk: tk.value
+    })
+  }).then(r => r.json()).then(alert);
+}
 </script>
+
 </body>
 </html>
+
