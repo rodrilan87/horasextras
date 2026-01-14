@@ -2,161 +2,129 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema OSDE - Gestión de Horas</title>
+    <title>OSDE - Gestión de Horas</title>
     <style>
-        :root { --osde: #00548f; --rojo: #d9534f; --verde: #5cb85c; --fondo: #f4f7f9; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--fondo); padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 12px; max-width: 650px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { background: var(--osde); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .semaforo { padding: 15px; border-radius: 8px; color: white; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        :root { --osde: #00548f; --rojo: #d9534f; --verde: #5cb85c; --fondo: #f0f4f7; }
+        body { font-family: sans-serif; background: var(--fondo); padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, select, textarea, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: var(--osde); color: white; font-weight: bold; cursor: pointer; border: none; }
+        .semaforo { padding: 10px; border-radius: 6px; text-align: center; color: white; font-weight: bold; margin-bottom: 15px; }
         .verde { background: var(--verde); }
         .rojo { background: var(--rojo); }
         .hidden { display: none; }
-        .item-audit { border-left: 5px solid var(--osde); background: #f9f9f9; padding: 15px; margin-top: 10px; display: flex; justify-content: space-between; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="v-login">
-        <h2 style="color:var(--osde); text-align:center;">Gestión OSDE</h2>
-        <div id="login-form">
-            <input type="email" id="u" placeholder="Email (@osde.com.ar / @gmx.com)">
-            <input type="password" id="p" placeholder="Contraseña">
-            <button onclick="ejecutarLogin()">INGRESAR</button>
-            <p style="text-align:center"><a href="#" onclick="switchVista(true)">Registrar cuenta nueva</a></p>
+    <div class="card" id="view-login">
+        <h2 style="color:var(--osde); text-align:center;">Gestión OSDE 2026</h2>
+        <div id="box-login">
+            <input type="email" id="email" placeholder="Email (@osde.com.ar / @gmx.com)">
+            <input type="password" id="pass" placeholder="Contraseña">
+            <button onclick="login()">INGRESAR</button>
+            <p style="text-align:center; font-size:14px">¿No tienes cuenta? <a href="#" onclick="toggle(true)">Regístrate</a></p>
         </div>
-        <div id="reg-form" class="hidden">
-            <input type="email" id="ru" placeholder="Email corporativo">
-            <input type="password" id="rp" placeholder="Nueva contraseña">
-            <button onclick="ejecutarRegistro()" style="background:var(--verde)">CREAR CUENTA</button>
-            <p style="text-align:center"><a href="#" onclick="switchVista(false)">Volver al login</a></p>
+        <div id="box-reg" class="hidden">
+            <input type="email" id="remail" placeholder="Tu Email">
+            <input type="password" id="rpass" placeholder="Tu Contraseña">
+            <button onclick="registrar()" style="background:var(--verde)">CREAR CUENTA</button>
+            <p style="text-align:center; font-size:14px"><a href="#" onclick="toggle(false)">Volver al Login</a></p>
         </div>
     </div>
 
-    <div class="card hidden" id="v-panel">
-        <h2 id="saludo">Hola</h2>
-        <div id="sem" class="semaforo verde">Calculando horas...</div>
-
-        <div class="grid">
-            <input type="date" id="f">
-            <input type="text" id="tk" placeholder="N° Ticket">
-            <input type="time" id="ini">
-            <input type="time" id="fin">
-            <input type="number" id="hs" placeholder="Horas totales">
-            <select id="tip">
-                <option value="100%">Al 100%</option>
-                <option value="50%">Al 50%</option>
-            </select>
-        </div>
-        <select id="mes" onchange="renderizar()">
+    <div class="card hidden" id="view-panel">
+        <h3 id="txt-hola">Hola</h3>
+        <div id="semaforo" class="semaforo verde">0 Horas acumuladas</div>
+        <input type="date" id="f-fecha">
+        <input type="text" id="f-tk" placeholder="Número de Ticket">
+        <input type="number" id="f-hs" placeholder="Cantidad de Horas">
+        <select id="f-mes" onchange="actualizar()">
             <option value="Enero">Enero 2026</option>
             <option value="Febrero">Febrero 2026</option>
         </select>
-        <textarea id="sug" placeholder="Comentarios o sugerencias..."></textarea>
-        <button onclick="cargar()">GUARDAR REGISTRO</button>
-
-        <h3 style="margin-top:20px">Historial</h3>
-        <div id="historial"></div>
+        <button onclick="enviar()">CARGAR REGISTRO</button>
+        <div id="lista" style="margin-top:20px; font-size:14px; border-top:1px solid #eee;"></div>
     </div>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbxda8QY_VwE8KPghi63G55cAbuYkfDVr_Z2sSxSy4j9PiDCQTt_dNxZrL9UJTpRoTNr/exec"; 
-        let sesEmail = "", sesRol = "", sesNom = "";
+        // PEGA AQUÍ TU URL DE GOOGLE (La que generaste recién)
+        const API_URL = "https://script.google.com/macros/s/AKfycbyRZm4pnodorMsBKN47x5lIH-ZLSlQqxZZhea45Fgm4ndU1_5wR-uV7RdxOuCHiepdZ/exec"; 
 
-        function switchVista(reg) {
-            document.getElementById('login-form').className = reg ? 'hidden' : '';
-            document.getElementById('reg-form').className = reg ? '' : 'hidden';
+        let userEmail = "", userRol = "";
+
+        function toggle(show) {
+            document.getElementById('box-login').className = show ? 'hidden' : '';
+            document.getElementById('box-reg').className = show ? '' : 'hidden';
         }
 
-        // --- LOGIN JSONP (NUNCA FALLA) ---
-        function ejecutarLogin() {
-            const user = document.getElementById('u').value.trim();
-            const pass = document.getElementById('p').value;
-            const cb = 'callback_' + Math.round(100000 * Math.random());
-            
-            window[cb] = function(data) {
-                delete window[cb];
-                if (data.status === "OK") {
-                    sesEmail = user; sesRol = data.rol;
-                    sesNom = user.split('@')[0].toUpperCase();
-                    document.getElementById('v-login').classList.add('hidden');
-                    document.getElementById('v-panel').classList.remove('hidden');
-                    document.getElementById('saludo').innerText = "Bienvenido, " + sesNom;
-                    document.getElementById('f').valueAsDate = new Date();
-                    renderizar();
-                } else { alert("Error de acceso"); }
+        // --- CONEXIÓN JSONP (EVITA ERROR DE CONEXIÓN) ---
+        function callAPI(params, callback) {
+            const cbName = 'cb_' + Math.floor(Math.random() * 100000);
+            window[cbName] = function(data) {
+                callback(data);
+                delete window[cbName];
+                document.body.removeChild(script);
             };
-
-            const s = document.createElement('script');
-            s.src = `${URL}?action=login&u=${encodeURIComponent(user)}&p=${encodeURIComponent(pass)}&callback=${cb}`;
-            document.body.appendChild(s);
+            const script = document.createElement('script');
+            script.src = `${API_URL}?callback=${cbName}&${params}`;
+            document.body.appendChild(script);
         }
 
-        async function ejecutarRegistro() {
-            const u = document.getElementById('ru').value.trim().toLowerCase();
-            const p = document.getElementById('rp').value;
-            if (!u.endsWith("@osde.com.ar") && u !== "rodri@gmx.com") return alert("Email no válido");
+        function login() {
+            const u = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            callAPI(`action=login&u=${u}&p=${p}`, (data) => {
+                if(data.status === "OK") {
+                    userEmail = u; userRol = data.rol;
+                    document.getElementById('txt-hola').innerText = "Hola, " + u.split('@')[0].toUpperCase();
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('view-panel').classList.remove('hidden');
+                    actualizar();
+                } else { alert("Credenciales incorrectas"); }
+            });
+        }
+
+        async function registrar() {
+            const u = document.getElementById('remail').value.trim().toLowerCase();
+            const p = document.getElementById('rpass').value;
+            if(!u.endsWith("@osde.com.ar") && u !== "rodri@gmx.com") return alert("Email no permitido");
             
-            await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "registro_usuario", u: u, p: p}) });
-            alert("Cuenta creada.");
-            switchVista(false);
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "registro_usuario", u: u, p: p}) });
+            alert("Usuario creado. Intenta ingresar.");
+            toggle(false);
         }
 
-        async function cargar() {
+        async function enviar() {
             const payload = {
-                type: "carga", n: sesNom, u: sesEmail,
-                fecha: document.getElementById('f').value,
-                tk: document.getElementById('tk').value,
-                desde: document.getElementById('ini').value,
-                hasta: document.getElementById('fin').value,
-                h: document.getElementById('hs').value,
-                tipo: document.getElementById('tip').value,
-                mes: document.getElementById('mes').value,
-                sug: document.getElementById('sug').value
+                type: "carga", u: userEmail, n: userEmail.split('@')[0],
+                fecha: document.getElementById('f-fecha').value,
+                tk: document.getElementById('f-tk').value,
+                h: document.getElementById('f-hs').value,
+                mes: document.getElementById('f-mes').value
             };
-            await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Carga exitosa");
-            renderizar();
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("Carga realizada");
+            actualizar();
         }
 
-        function renderizar() {
-            const cb = 'cb_read_' + Math.round(100000 * Math.random());
-            const mesSel = document.getElementById('mes').value;
-
-            window[cb] = function(data) {
-                delete window[cb];
-                const lista = document.getElementById('historial');
-                const sem = document.getElementById('sem');
+        function actualizar() {
+            callAPI("action=read", (data) => {
+                const lista = document.getElementById('lista');
+                const sem = document.getElementById('semaforo');
+                const mesSel = document.getElementById('f-mes').value;
                 lista.innerHTML = "";
                 let total = 0;
 
                 data.forEach(r => {
-                    if (r[0] === "DATA") {
-                        const [tag, nom, email, mes, fec, tk, d, h, hs, tip] = r;
-                        if (sesRol === "ADMIN" || email.toLowerCase() === sesEmail.toLowerCase()) {
-                            if (mes === mesSel) total += parseFloat(hs);
-                            lista.innerHTML += `<div class="item-audit">
-                                <div><strong>${nom}</strong> - ${hs}hs (${tip})<br><small>TK: ${tk} | ${fec}</small></div>
-                                ${sesRol === "ADMIN" ? `<button style="width:auto; background:red" onclick="borrar('${email}','${tk}')">🗑️</button>` : ''}
-                            </div>`;
-                        }
+                    if(r[0] === "DATA" && (userRol === "ADMIN" || r[2] === userEmail)) {
+                        if(r[3] === mesSel) total += parseFloat(r[8]);
+                        lista.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee;">${r[4]} | TK:${r[5]} | ${r[8]}hs</div>`;
                     }
                 });
-                sem.innerText = `Total ${mesSel}: ${total}hs`;
+                sem.innerText = `${total} Horas acumuladas en ${mesSel}`;
                 sem.className = total > 30 ? "semaforo rojo" : "semaforo verde";
-            };
-
-            const s = document.createElement('script');
-            s.src = `${URL}?action=read&callback=${cb}`;
-            document.body.appendChild(s);
-        }
-
-        async function borrar(u, tk) {
-            if(!confirm("¿Borrar?")) return;
-            await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "borrar_registro", u: u, tk: tk}) });
-            renderizar();
+            });
         }
     </script>
 </body>
