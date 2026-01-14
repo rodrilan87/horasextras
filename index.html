@@ -2,196 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSDE - Gestión de Horas Extras</title>
+    <title>OSDE - Panel Seguro</title>
     <style>
-        :root {
-            --osde-blue: #00548f;
-            --danger: #d9534f;
-            --bg-gray: #f4f7f6;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 700px; margin: auto; }
-        h2, h3 { color: var(--osde-blue); margin-top: 0; }
-
-        /* Formulario */
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { background: var(--osde-blue); color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-
-        /* Badges Azules */
-        .badge-area { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-        .badge-azul { 
-            background: var(--osde-blue); color: white; padding: 6px 14px; 
-            border-radius: 20px; font-size: 0.85em; font-weight: 500;
-        }
-
-        /* Auditoría */
-        .registro-row { 
-            border-left: 5px solid var(--osde-blue); background: #f9fcff;
-            padding: 12px; margin-bottom: 10px; border-radius: 4px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .info-emp strong { font-size: 1.1em; color: #222; }
-        .info-emp small { color: #666; display: block; }
-        .btn-del { background: none; color: var(--danger); width: auto; font-size: 1.2em; padding: 0 10px; }
-
+        :root { --osde: #00548f; --danger: #d9534f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 600px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { background: var(--osde); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .badge-azul { background: var(--osde); color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: inline-block; margin: 4px; }
+        .registro { border-left: 5px solid var(--osde); background: #f8faff; padding: 15px; margin-top: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="login-section">
-        <h2>Ingreso OSDE</h2>
-        <input type="email" id="email-user" placeholder="tu-email@osde.com.ar">
-        <button onclick="intentarIngresar()">INGRESAR AL PANEL</button>
+    <div class="card" id="login-box">
+        <h2 style="color: var(--osde)">Ingreso Seguro</h2>
+        <input type="email" id="email" placeholder="Email @osde.com.ar">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="login()">INGRESAR</button>
     </div>
 
-    <div class="card hidden" id="main-section">
-        <h2 id="txt-bienvenida"></h2>
-        
-        <div style="background: #f0f4f7; padding: 15px; border-radius: 8px;">
-            <input type="text" id="tk-id" placeholder="Número de Ticket">
-            <input type="number" id="hs-cant" placeholder="Cantidad de Horas">
-            <select id="mes-sel">
+    <div class="card hidden" id="panel-box">
+        <h2 id="saludo"></h2>
+        <div id="user-form">
+            <input type="text" id="tk" placeholder="ID Ticket">
+            <input type="number" id="hs" placeholder="Horas">
+            <select id="mes">
                 <option value="Enero">Enero 2026</option>
                 <option value="Febrero">Febrero 2026</option>
-                <option value="Marzo">Marzo 2026</option>
             </select>
-            <button onclick="registrarHoras()">CARGAR REGISTRO</button>
+            <button onclick="cargar()">Cargar Horas</button>
         </div>
 
-        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #eee;">
-
-        <h3>Auditoría de Jefatura</h3>
-        <div id="badges-container" class="badge-area"></div>
-        <div id="lista-registros"></div>
+        <hr style="margin: 20px 0">
+        
+        <h3>Auditoría de Horas</h3>
+        <div id="badges"></div>
+        <div id="lista"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN: REEMPLAZA ESTA URL
-        const MI_URL_APPSCRIPT = "https://script.google.com/macros/s/AKfycbzXHrhmpQabBjJAY-mGInniz9Hinuspvhf2jLh1ujZR0sp9eDZQWaF7CJWS2VtN-9JQ/exec"; 
-        
-        let sesionEmail = "";
-        let sesionNombre = "";
+        const URL_API = "https://script.google.com/macros/s/AKfycbzKXpDmcxfYlFduTz4vI3lrhJQNqx_2KodissD_37io-kucnkvj2OjZrCaYv-6-CciS/exec"; // <-- REEMPLAZAR
+        let userLogueado = "";
+        let nombreLogueado = "";
 
-        // 1. LÓGICA DE LOGIN
-        function intentarIngresar() {
-            const correo = document.getElementById('email-user').value.toLowerCase().trim();
-            
-            if (correo.endsWith("@osde.com.ar") || correo === "rodri@gmx.com") {
-                sesionEmail = correo;
-                sesionNombre = correo.split('@')[0].toUpperCase();
-                
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('main-section').classList.remove('hidden');
-                document.getElementById('txt-bienvenida').innerText = "Hola, " + sesionNombre;
-                
-                obtenerDatosServidor();
+        async function login() {
+            const u = document.getElementById('email').value.toLowerCase().trim();
+            const p = document.getElementById('pass').value;
+
+            const res = await fetch(URL_API, {
+                method: 'POST',
+                body: JSON.stringify({type: "login", u: u, p: p})
+            });
+            const data = await res.json();
+
+            if (data.status === "OK") {
+                userLogueado = u;
+                nombreLogueado = u.split('@')[0].toUpperCase();
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('panel-box').classList.remove('hidden');
+                document.getElementById('saludo').innerText = "Bienvenido " + nombreLogueado;
+                actualizarVista();
             } else {
-                alert("ERROR: El correo debe ser @osde.com.ar o rodri@gmx.com");
+                alert("Email o contraseña incorrectos");
             }
         }
 
-        // 2. CARGAR DATOS A LA PLANILLA
-        async function registrarHoras() {
-            const tk = document.getElementById('tk-id').value;
-            const hs = document.getElementById('hs-cant').value;
-            const mes = document.getElementById('mes-sel').value;
-
-            if(!tk || !hs) return alert("Por favor, completa Ticket y Horas.");
-
+        async function cargar() {
             const payload = {
                 type: "carga",
-                n: sesionNombre,
-                u: sesionEmail,
-                mes: mes,
-                tk: tk,
-                h: hs,
-                p: "100%"
+                n: nombreLogueado,
+                u: userLogueado,
+                tk: document.getElementById('tk').value,
+                h: document.getElementById('hs').value,
+                mes: document.getElementById('mes').value
             };
-
-            await fetch(MI_URL_APPSCRIPT, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(payload)
-            });
-
-            alert("Horas enviadas con éxito.");
-            location.reload();
+            await fetch(URL_API, { method: 'POST', body: JSON.stringify(payload) });
+            alert("Carga exitosa");
+            actualizarVista();
         }
 
-        // 3. LEER Y DIBUJAR AUDITORÍA + BADGES
-        async function obtenerDatosServidor() {
-            try {
-                const res = await fetch(MI_URL_APPSCRIPT);
-                const filas = await res.json();
-                
-                const contenedor = document.getElementById('lista-registros');
-                const badgeArea = document.getElementById('badges-container');
-                contenedor.innerHTML = "";
-                badgeArea.innerHTML = "";
+        async function actualizarVista() {
+            const res = await fetch(URL_API + "?action=read");
+            const filas = await res.json();
+            const lista = document.getElementById('lista');
+            const badges = document.getElementById('badges');
+            lista.innerHTML = ""; badges.innerHTML = "";
+            
+            let sumas = {};
 
-                let totales = {}; // Para Badges
+            filas.forEach(f => {
+                if (f[0] === "DATA") {
+                    const [tag, nom, em, mes, fec, tk, hs] = f;
+                    const key = nom + " (" + mes + ")";
+                    sumas[key] = (sumas[key] || 0) + parseFloat(hs);
 
-                filas.forEach(fila => {
-                    if (fila[0] === "DATA") {
-                        const [etiqueta, nombre, email, mes, fecha, ticket, horas] = fila;
-
-                        // Acumular para Badge Azul
-                        const key = nombre + " (" + mes + ")";
-                        totales[key] = (totales[key] || 0) + parseFloat(horas);
-
-                        // Crear Fila de Auditoría
-                        const div = document.createElement('div');
-                        div.className = "registro-row";
-                        div.innerHTML = `
-                            <div class="info-emp">
-                                <strong>${nombre}</strong>
-                                <small>${email}</small>
-                                <div style="font-size: 0.85em; margin-top: 4px;">
-                                    📅 ${new Date(fecha).toLocaleDateString()} | 🎟️ TK: ${ticket} | ⏱️ ${horas}hs
-                                </div>
-                            </div>
-                            <button class="btn-del" onclick="borrarRegistro('${email}', '${fecha}', '${horas}')">🗑️</button>
-                        `;
-                        contenedor.appendChild(div);
-                    }
-                });
-
-                // Crear Badges Azules
-                for (let k in totales) {
-                    const b = document.createElement('div');
-                    b.className = "badge-azul";
-                    b.innerText = "🔵 " + k + ": " + totales[k] + "hs totales";
-                    badgeArea.appendChild(b);
+                    const item = document.createElement('div');
+                    item.className = "registro";
+                    item.innerHTML = `<div><strong>${nom}</strong><br><small>${em}</small><br>TK: ${tk} | ${hs}hs</div>
+                                      <button style="width:auto; background:none; color:red" onclick="borrar('${em}','${fec}','${hs}')">🗑️</button>`;
+                    lista.appendChild(item);
                 }
+            });
 
-            } catch (error) {
-                console.error("Error al cargar auditoría:", error);
+            for (let k in sumas) {
+                const b = document.createElement('div');
+                b.className = "badge-azul";
+                b.innerText = `🔵 ${k}: ${sumas[k]}hs`;
+                badges.appendChild(b);
             }
         }
 
-        // 4. BORRAR REGISTRO
-        async function borrarRegistro(email, fecha, horas) {
-            if(!confirm("¿Deseas borrar este registro?")) return;
-
-            const datosBorrado = {
-                type: "borrar_registro",
-                u: email,
-                f: fecha,
-                h: horas
-            };
-
-            await fetch(MI_URL_APPSCRIPT, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(datosBorrado)
-            });
-
-            alert("Registro eliminado.");
-            location.reload();
+        async function borrar(u, f, h) {
+            if(!confirm("¿Borrar?")) return;
+            await fetch(URL_API, { method: 'POST', body: JSON.stringify({type:"borrar_registro", u:u, f:f, h:h}) });
+            actualizarVista();
         }
     </script>
 </body>
