@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Horas Extras</title>
 
 <style>
 :root {
   --azul: #0a1a2f;
   --azul-claro: #eef3fb;
-  --verde: #bff0c6;
-  --verde-fuerte: #39b36e;
-  --amarillo: #ffeaa7;
+  --verde: #c7f5cf;
+  --amarillo: #ffe9a6;
   --rojo: #ffb3b3;
 }
 
@@ -28,8 +27,8 @@ body {
 .login-container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .login-card {
@@ -37,53 +36,30 @@ body {
   width: 380px;
   padding: 30px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.15);
   text-align: center;
-}
-
-.login-icon {
-  width: 56px;
-  height: 56px;
-  margin: auto;
-  border-radius: 50%;
-  background: #1e5eff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 26px;
-}
-
-.login-card h2 {
-  margin: 15px 0 5px;
-}
-
-.login-card p {
-  color: #666;
-  margin-bottom: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
 }
 
 .login-card input {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
   margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .login-card button {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
-  border: none;
   background: var(--azul);
   color: white;
-  font-size: 15px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .login-card .link {
-  margin-top: 15px;
+  margin-top: 10px;
   font-size: 14px;
 }
 
@@ -100,7 +76,7 @@ body {
 /* ===== APP ===== */
 .app {
   display: none;
-  padding: 30px;
+  padding: 25px;
 }
 
 .card {
@@ -132,14 +108,13 @@ body {
   cursor: pointer;
 }
 
-/* SUGERENCIAS */
 textarea {
   width: 100%;
   min-height: 80px;
+  margin-top: 10px;
   padding: 12px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  margin-top: 10px;
 }
 
 /* SEMAFORO */
@@ -160,6 +135,34 @@ textarea {
 .verde { background: var(--verde); }
 .amarillo { background: var(--amarillo); }
 .rojo { background: var(--rojo); }
+
+/* LISTADO */
+.mes {
+  background: var(--verde);
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 25px;
+}
+
+.registro {
+  background: #ecfff0;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.registro button {
+  border: none;
+  background: transparent;
+  color: red;
+  font-size: 16px;
+  cursor: pointer;
+}
 </style>
 </head>
 
@@ -168,12 +171,11 @@ textarea {
 <!-- LOGIN -->
 <div class="login-container" id="login">
   <div class="login-card">
-    <div class="login-icon">🕒</div>
     <h2>Bienvenido</h2>
     <p>Ingresá para gestionar tus horas extras</p>
 
-    <input id="email" placeholder="tu@email.com">
-    <input id="clave" type="password" placeholder="Contraseña">
+    <input id="email" placeholder="email">
+    <input id="clave" type="password" placeholder="clave">
 
     <button onclick="login()">Iniciar sesión</button>
 
@@ -189,6 +191,19 @@ textarea {
 <!-- APP -->
 <div class="app" id="app">
 
+  <!-- LOGOUT -->
+  <div style="display:flex; justify-content:flex-end; margin-bottom:15px;">
+    <button onclick="logout()" style="
+      background:#ddd;
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      cursor:pointer;">
+      Cerrar sesión
+    </button>
+  </div>
+
+  <!-- CARGA -->
   <div class="card">
     <div class="form-row">
       <input id="usuario" disabled>
@@ -212,15 +227,16 @@ textarea {
     </div>
   </div>
 
+  <!-- LISTADO -->
+  <div class="card" id="listado"></div>
+
 </div>
 
 <script>
-/* ===============================
-   LINK DEL BACKEND (Apps Script)
-   =============================== */
+/* ===== BACKEND ===== */
 const API = "https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
 
-/* ===== LOGIN ===== */
+/* LOGIN */
 function login() {
   fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
@@ -230,23 +246,37 @@ function login() {
         return;
       }
       usuario.value = d.email;
-      document.getElementById("login").style.display = "none";
-      document.getElementById("app").style.display = "block";
+      loginDiv(false);
+      cargarRegistros();
     });
 }
 
-/* ===== REGISTRO ===== */
+/* REGISTRO */
 function registrar() {
   fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
     .then(d => {
       error.textContent = d.ok
-        ? "Usuario registrado. Ahora podés iniciar sesión."
+        ? "Usuario registrado. Ahora iniciá sesión."
         : d.error;
     });
 }
 
-/* ===== GUARDAR HORAS ===== */
+/* LOGOUT */
+function logout() {
+  email.value = "";
+  clave.value = "";
+  usuario.value = "";
+  document.getElementById("listado").innerHTML = "";
+  loginDiv(true);
+}
+
+function loginDiv(showLogin) {
+  document.getElementById("login").style.display = showLogin ? "flex" : "none";
+  document.getElementById("app").style.display = showLogin ? "none" : "block";
+}
+
+/* GUARDAR */
 function guardar() {
   const horas =
     (new Date(`1970-01-01T${hasta.value}`) -
@@ -267,7 +297,39 @@ function guardar() {
     `&porcentaje=${encodeURIComponent(porcentaje.value)}` +
     `&sugerencia=${encodeURIComponent(sugerencia.value)}` +
     `&tk=${encodeURIComponent(tk.value)}`
-  ).then(() => alert("Horas guardadas"));
+  ).then(() => cargarRegistros());
+}
+
+/* LISTAR */
+function cargarRegistros() {
+  fetch(`${API}?action=listar&email=${encodeURIComponent(usuario.value)}`)
+    .then(r => r.json())
+    .then(data => {
+      const cont = document.getElementById("listado");
+      cont.innerHTML = "";
+
+      if (!data.length) {
+        cont.innerHTML = "<p>No hay registros cargados.</p>";
+        return;
+      }
+
+      const porMes = {};
+      data.forEach(r => {
+        if (!porMes[r[9]]) porMes[r[9]] = [];
+        porMes[r[9]].push(r);
+      });
+
+      Object.keys(porMes).forEach(mes => {
+        cont.innerHTML += `<div class="mes">${mes}</div>`;
+        porMes[mes].forEach(r => {
+          cont.innerHTML += `
+            <div class="registro">
+              ${r[3]} · ${r[4]} a ${r[5]} · ${r[6]} hs · TK ${r[10]} · ${r[7]}
+              <button>✖</button>
+            </div>`;
+        });
+      });
+    });
 }
 </script>
 
