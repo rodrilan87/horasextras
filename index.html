@@ -3,128 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA HORAS OSDE v32</title>
+    <title>SISTEMA OSDE</title>
     <style>
-        :root { --navy: #2c3e50; --orange: #f39c12; --green: #27ae60; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        input, select { padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .btn { border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; width: 100%; text-transform: uppercase; }
-        .btn-navy { background: var(--navy); }
-        .btn-orange { background: var(--orange); }
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .oculto { display: none; }
-        .header { text-align: center; color: var(--navy); margin-bottom: 20px; }
     </style>
 </head>
 <body>
-
-    <div id="auth-box" class="card">
-        <h2 class="header">SISTEMA OSDE</h2>
+    <div id="auth" class="card">
+        <h2>Ingreso OSDE</h2>
         <div id="login-form">
             <input type="email" id="l_email" placeholder="Email corporativo">
             <input type="password" id="l_pass" placeholder="Contraseña">
-            <button class="btn btn-navy" onclick="app.login()">INGRESAR</button>
-            <p onclick="app.toggle()" style="text-align:center; color:blue; cursor:pointer; margin-top:15px;">¿No tenés cuenta? Registrate</p>
+            <button onclick="app.login()">INGRESAR</button>
+            <p onclick="app.toggle()" style="color:blue; cursor:pointer; text-align:center">Registrarse</p>
         </div>
         <div id="reg-form" class="oculto">
-            <input type="text" id="r_name" placeholder="Nombre Completo">
+            <input type="text" id="r_name" placeholder="Nombre completo">
             <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-            <input type="password" id="r_pass" placeholder="Crear Contraseña">
-            <button class="btn" style="background:var(--green)" onclick="app.register()">SOLICITAR ACCESO</button>
-            <p onclick="app.toggle()" style="text-align:center; cursor:pointer; margin-top:15px;">Volver al Login</p>
+            <input type="password" id="r_pass" placeholder="Contraseña">
+            <button onclick="app.register()" style="background: green;">CREAR CUENTA</button>
+            <p onclick="app.toggle()" style="text-align:center; cursor:pointer">Volver</p>
         </div>
     </div>
 
     <div id="dash" class="card oculto">
-        <h3 id="txt_bienvenida"></h3>
-        <div id="form_carga">
-            <label>Detalle (Día y Horas):</label>
-            <input type="text" id="c_det" placeholder="Ej: 13/01 14:00 a 16:30">
-            <label>Tickets:</label>
-            <input type="number" id="c_tk" value="0">
-            <label>Tipo:</label>
-            <select id="c_tip"><option value="100">Al 100%</option><option value="50">Al 50%</option></select>
-            <button class="btn btn-orange" onclick="app.save()">GUARDAR JORNADA</button>
-        </div>
-        <button class="btn" style="margin-top:20px; background:#666;" onclick="location.reload()">CERRAR SESIÓN</button>
+        <h3 id="bienvenida"></h3>
+        <input type="text" id="c_det" placeholder="¿Qué hiciste hoy?">
+        <button onclick="app.save()" style="background: orange;">GUARDAR JORNADA</button>
+        <button onclick="location.reload()" style="margin-top:10px; background: #999;">SALIR</button>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwxFZXkbBdKbFWNI5w1j0rs95n-OmOLRXC7izXoAh8U3q1abFVdPqt86hScKNBasusC/exec"; // REEMPLAZAR ESTO
+        const URL = "https://script.google.com/macros/s/AKfycbwxFZXkbBdKbFWNI5w1j0rs95n-OmOLRXC7izXoAh8U3q1abFVdPqt86hScKNBasusC/exec";
 
         const app = {
-            current: null,
-
-            toggle() {
+            user: null,
+            toggle() { 
                 document.getElementById('login-form').classList.toggle('oculto');
                 document.getElementById('reg-form').classList.toggle('oculto');
             },
-
             async register() {
                 const n = document.getElementById('r_name').value;
                 const m = document.getElementById('r_email').value.toLowerCase().trim();
                 const p = document.getElementById('r_pass').value;
-
-                if(!m.endsWith('@osde.com.ar')) return alert("Registro solo para @osde.com.ar");
-
-                await fetch(WEB_APP_URL, {
+                if(!m.endsWith("@osde.com.ar")) return alert("Solo @osde.com.ar");
+                
+                await fetch(URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors', // Esto evita el error de CORS
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({type: "registro", n, m, p})
                 });
-                alert("¡Registro exitoso! Ya podés iniciar sesión.");
+                alert("Registrado. Intenta loguearte.");
                 this.toggle();
             },
-
             async login() {
                 const m = document.getElementById('l_email').value.toLowerCase().trim();
                 const p = document.getElementById('l_pass').value;
-
-                // Admin directo
+                
                 if(m === "rodri@gmx.com" && p === "1234") {
-                    this.entrar({n: "Rodrigo (Admin)", m: m});
-                    return;
+                    return this.entrar({n: "Admin", m});
                 }
 
                 try {
-                    const res = await fetch(WEB_APP_URL);
+                    const res = await fetch(URL);
                     const db = await res.json();
-                    const user = db.find(r => r[0] === "USER" && r[2] === m && r[3] === String(p));
-                    
-                    if(user) {
-                        this.entrar({n: user[1], m: user[2]});
-                    } else {
-                        alert("Usuario no encontrado o datos incorrectos.");
-                    }
-                } catch(e) {
-                    alert("Error al conectar con la base de datos.");
-                }
+                    const u = db.find(r => r[2] === m && String(r[3]) === String(p));
+                    if(u) this.entrar({n: u[1], m: u[2]});
+                    else alert("Usuario no encontrado.");
+                } catch(e) { alert("Error de base de datos."); }
             },
-
             entrar(u) {
-                this.current = u;
-                document.getElementById('auth-box').classList.add('oculto');
+                this.user = u;
+                document.getElementById('auth').classList.add('oculto');
                 document.getElementById('dash').classList.remove('oculto');
-                document.getElementById('txt_bienvenida').innerText = "Hola, " + u.n;
+                document.getElementById('bienvenida').innerText = "Hola, " + u.n;
             },
-
             async save() {
-                const d = document.getElementById('c_det').value;
-                if(!d) return alert("Completá el detalle");
-
-                await fetch(WEB_APP_URL, {
+                await fetch(URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({
-                        type: "carga",
-                        n: this.current.n,
-                        u: this.current.m,
-                        d: d,
-                        t: document.getElementById('c_tk').value,
-                        p: document.getElementById('c_tip').value
+                        type: "carga", n: this.user.n, u: this.user.m, d: document.getElementById('c_det').value
                     })
                 });
-                alert("Jornada guardada correctamente.");
+                alert("Guardado!");
                 document.getElementById('c_det').value = "";
             }
         };
