@@ -3,156 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA GESTIÓN OSDE v26.4 - PRO</title>
+    <title>SISTEMA OSDE - GESTIÓN TOTAL v30</title>
     <style>
-        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --gray: #f4f4f4; --green: #27ae60; --red: #dc3545; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 15px; color: #333; }
-        .container { max-width: 1000px; margin: auto; }
+        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --green: #27ae60; --red: #dc3545; --gray: #f4f4f4; }
+        body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 10px; }
+        .container { max-width: 1100px; margin: auto; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 20px; border-top: 8px solid var(--navy); }
         
-        /* Estética Cards */
-        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin-bottom: 20px; border-top: 6px solid var(--navy); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gray); padding-bottom: 15px; margin-bottom: 20px; }
-        .logo { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
-        
-        /* Tabs Nav */
-        .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; overflow-x: auto; }
-        .tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; color: #777; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { color: var(--sky); border-bottom: 3px solid var(--sky); }
-        .tab-content { display: none; animation: fadeIn 0.3s; }
-        .tab-content.active { display: block; }
+        /* Semáforo */
+        .semaforo-bar { height: 20px; background: #eee; border-radius: 10px; overflow: hidden; margin: 10px 0; border: 1px solid #ccc; }
+        .progress { height: 100%; transition: 0.5s; width: 0%; }
+        .verde { background: var(--green); }
+        .naranja { background: var(--orange); }
+        .rojo { background: var(--red); }
 
-        /* Formulario */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .full { grid-column: span 2; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: var(--navy); font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; color: white; }
-        .btn-main { background: var(--sky); width: 100%; }
-        .btn-orange { background: var(--orange); margin-top: 15px; }
-        .btn-logout { background: var(--red); font-size: 12px; padding: 8px 15px; }
-        
-        /* Tablas */
-        .table-res { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-        th { background: var(--navy); color: white; padding: 12px; text-align: left; font-size: 14px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .b-50 { background: #fff3cd; color: #856404; }
-        .b-100 { background: #d4edda; color: #155724; }
+        /* Tabs */
+        .nav-tabs { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; border-bottom: 2px solid #ddd; }
+        .tab-btn { padding: 10px 20px; border: none; background: #eee; cursor: pointer; font-weight: bold; border-radius: 8px 8px 0 0; }
+        .tab-btn.active { background: var(--navy); color: white; }
 
+        /* Form */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; }
+        
+        .mes-group { background: var(--navy); color: white; padding: 8px 15px; margin-top: 20px; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 5px; font-size: 13px; }
+        th { background: #f8f9fa; padding: 10px; border-bottom: 2px solid #ddd; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        
         .oculto { display: none; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Changelog */
-        .log-item { border-left: 4px solid var(--orange); padding-left: 15px; margin-bottom: 15px; background: #fffaf0; padding: 10px; border-radius: 0 8px 8px 0; }
+        .cierre-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
+        .cierre-box { background: var(--gray); padding: 10px; border-radius: 8px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="auth-section" class="card" style="max-width: 400px; margin: 60px auto;">
-        <div style="text-align: center; margin-bottom: 25px;">
-            <div class="logo">OSDE <span style="color:var(--sky)">PORTAL</span></div>
-            <p style="color: #666; font-size: 14px;">Ingreso exclusivo colaboradores</p>
-        </div>
-        
+    <div id="auth-section" class="card" style="max-width: 400px; margin: 50px auto;">
+        <h2 style="text-align:center; color:var(--navy)">OSDE <span style="color:var(--sky)">PORTAL</span></h2>
         <div id="login-form">
-            <label>Email Corporativo</label>
-            <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
-            <label>Contraseña</label>
-            <input type="password" id="l_pass" placeholder="••••••••">
-            <button class="btn btn-main" onclick="app.login()">ENTRAR AL SISTEMA</button>
-            <p style="text-align:center; font-size:13px; margin-top:15px;">¿No tenés cuenta? <span onclick="app.toggleAuth()" style="color:var(--sky); cursor:pointer; font-weight:bold;">Registrate</span></p>
+            <input type="email" id="l_email" placeholder="Email corporativo">
+            <input type="password" id="l_pass" placeholder="Contraseña">
+            <button class="btn" style="background:var(--navy); width:100%; margin-top:10px;" onclick="app.login()">Entrar</button>
+            <p style="text-align:center; font-size:12px; cursor:pointer; color:var(--sky)" onclick="app.toggleAuth()">Solicitar acceso</p>
         </div>
-
         <div id="reg-form" class="oculto">
-            <label>Nombre Completo</label>
-            <input type="text" id="r_name">
-            <label>Email (@osde.com.ar)</label>
-            <input type="email" id="r_email">
-            <label>Crear Contraseña</label>
-            <input type="password" id="r_pass">
-            <button class="btn btn-main" style="background:var(--green)" onclick="app.register()">CREAR CUENTA</button>
-            <p onclick="app.toggleAuth()" style="text-align:center; cursor:pointer; font-size:13px; margin-top:15px; color:var(--sky);">Volver al inicio</p>
+            <input type="text" id="r_name" placeholder="Nombre completo">
+            <input type="email" id="r_email" placeholder="Email @osde.com.ar">
+            <input type="password" id="r_pass" placeholder="Contraseña">
+            <button class="btn" style="background:var(--green); width:100%;" onclick="app.register()">Registrarme</button>
+            <p style="text-align:center; font-size:12px; cursor:pointer" onclick="app.toggleAuth()">Volver</p>
         </div>
     </div>
 
     <div id="main-section" class="oculto">
         <div class="card">
-            <div class="header">
+            <div style="display:flex; justify-content:space-between; align-items:center">
                 <div>
-                    <div class="logo">OSDE <span style="color:var(--sky)">SISTEMA</span></div>
-                    <div id="user-display" style="font-size: 14px; color: #666; font-weight: bold;"></div>
+                    <h2 id="user-name" style="margin:0">Hola</h2>
+                    <span id="user-rol" style="font-size:12px; color:var(--sky); font-weight:bold; text-transform:uppercase"></span>
                 </div>
-                <button class="btn btn-logout" onclick="location.reload()">CERRAR SESIÓN</button>
+                <button class="btn" style="background:var(--red); font-size:11px;" onclick="app.logout()">Cerrar Sesión</button>
             </div>
 
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="app.tab(event, 'carga')">NUEVA CARGA</button>
-                <button class="tab-btn" onclick="app.tab(event, 'mis-datos')">MIS REGISTROS</button>
-                <button class="tab-btn" onclick="app.tab(event, 'extras')">EXTRAS & SOPORTE</button>
-                <button id="tab-admin-btn" class="tab-btn oculto" style="color:var(--orange)" onclick="app.tab(event, 'admin')">PANEL ADMIN ★</button>
+            <div id="semaforo-container">
+                <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:13px;">
+                    <span>Estado mensual de Horas Extras:</span>
+                    <b id="hs-count">0 / 30hs</b>
+                </div>
+                <div class="semaforo-bar"><div id="bar" class="progress"></div></div>
+            </div>
+
+            <div class="nav-tabs" style="margin-top:20px;">
+                <button class="tab-btn active" onclick="app.tab(event, 'carga')">Cargar Horas</button>
+                <button class="tab-btn" onclick="app.tab(event, 'mis-datos')">Mis Registros</button>
+                <button id="admin-btn" class="tab-btn oculto" style="color:var(--orange)" onclick="app.tab(event, 'admin')">Panel Jefe ★</button>
             </div>
 
             <div id="tab-carga" class="tab-content active">
-                <div class="grid">
-                    <div class="full">
-                        <label>Detalle de la Tarea (Día y Horarios)</label>
-                        <input type="text" id="c_det" placeholder="Ej: Sabado 17/01 - 14:00 a 18:00">
+                <div class="grid" style="margin-top:15px;">
+                    <div>
+                        <label>Fecha:</label>
+                        <div style="display:flex; gap:5px;">
+                            <input type="date" id="c_fecha">
+                            <button class="btn" style="background:var(--sky); padding:5px 10px;" onclick="app.setToday()">Hoy</button>
+                        </div>
                     </div>
                     <div>
-                        <label>Cantidad de Horas</label>
-                        <input type="number" id="c_hs" step="0.5" placeholder="Ej: 4">
+                        <label>Horas:</label>
+                        <input type="number" id="c_hs" step="0.5" placeholder="Ej: 3">
                     </div>
                     <div>
-                        <label>Tipo de Compensación</label>
-                        <select id="c_tipo">
-                            <option value="50">Al 50% (Sábados / Días hábiles)</option>
-                            <option value="100">Al 100% (Feriados / Domingos)</option>
-                        </select>
+                        <label>Compensación:</label>
+                        <select id="c_tipo"><option value="50">50%</option><option value="100">100%</option></select>
                     </div>
                     <div class="full">
-                        <label>Tickets asociados / Proyecto</label>
-                        <input type="text" id="c_tk" placeholder="TK-1234, TK-5678">
+                        <label>Detalle de tarea:</label>
+                        <input type="text" id="c_det" placeholder="¿Qué hiciste?">
                     </div>
                 </div>
-                <button class="btn btn-orange btn-main" id="btn-save" onclick="app.save()">GUARDAR EN PLANILLA DE GOOGLE</button>
+                <button class="btn" style="background:var(--orange); width:100%; margin-top:20px;" id="save-btn" onclick="app.save()">Guardar Jornada</button>
             </div>
 
             <div id="tab-mis-datos" class="tab-content">
-                <input type="text" id="filtro-user" placeholder="🔍 Buscar en mis registros..." onkeyup="app.filtrar('tabla-user')">
-                <div class="table-res">
-                    <table>
-                        <thead><tr><th>Fecha</th><th>Tarea</th><th>Hs</th><th>%</th><th>Tickets</th></tr></thead>
-                        <tbody id="tabla-user"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-extras" class="tab-content">
-                <div class="grid">
-                    <div>
-                        <h4 style="color:var(--navy)">Changelog v26.4</h4>
-                        <div class="log-item"><b>14/01/2026:</b> Restauración completa de base de datos y diseño Pro. Bypass Admin activado.</div>
-                        <div class="log-item"><b>12/01/2026:</b> Solución al error de "Comunicación con base de datos".</div>
-                    </div>
-                    <div>
-                        <h4 style="color:var(--navy)">Buzón de Sugerencias</h4>
-                        <textarea id="s_msg" rows="4" placeholder="¿Qué función te gustaría agregar al sistema?"></textarea>
-                        <button class="btn btn-main" style="background:var(--navy); margin-top:10px;" onclick="app.sugerir()">ENVIAR SUGERENCIA</button>
-                    </div>
-                </div>
+                <div id="lista-user"></div>
             </div>
 
             <div id="tab-admin" class="tab-content">
-                <h4 style="color:var(--orange)">Control Total de Cargas (Vista Administrador)</h4>
-                <input type="text" id="filtro-admin" placeholder="🔍 Filtrar por nombre de colaborador..." onkeyup="app.filtrar('tabla-admin')">
-                <div class="table-res">
-                    <table>
-                        <thead><tr><th>Colaborador</th><th>Fecha</th><th>Tarea</th><th>Hs</th><th>%</th></tr></thead>
-                        <tbody id="tabla-admin"></tbody>
+                <div class="nav-tabs" style="border:none; background:#f9f9f9; padding:5px; border-radius:8px;">
+                    <button class="tab-btn" onclick="app.subTab('auditoria')">Auditoría</button>
+                    <button class="tab-btn" onclick="app.subTab('usuarios')">Usuarios</button>
+                    <button class="tab-btn" onclick="app.subTab('cierres')">Calendario Cierres</button>
+                </div>
+
+                <div id="sub-auditoria" class="sub-tab">
+                    <input type="text" id="filtro-admin" placeholder="🔍 Buscar por nombre..." onkeyup="app.filtrarAdmin()" style="margin:10px 0;">
+                    <div id="lista-admin"></div>
+                </div>
+
+                <div id="sub-usuarios" class="sub-tab oculto">
+                    <table style="margin-top:15px;">
+                        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acción</th></tr></thead>
+                        <tbody id="tabla-usuarios"></tbody>
                     </table>
+                </div>
+
+                <div id="sub-cierres" class="sub-tab oculto">
+                    <h4>Configurar Días de Cierre Mensual</h4>
+                    <div class="cierre-grid" id="cierre-grid-ui"></div>
+                    <button class="btn" style="background:var(--navy); margin-top:15px;" onclick="app.saveCierres()">Guardar Calendario</button>
                 </div>
             </div>
         </div>
@@ -160,127 +140,182 @@
 </div>
 
 <script>
-    // URL DE TU APP SCRIPT - REEMPLAZALA ACÁ
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCJSHn7KZPyjRxE8I_qvUAYRnAv0uo-ydlTZuKh8hWV2pU__Rzkz8UQx7XbJnbDV7i/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyEuihBYqH50gIeUYNnDN67Fri86-08comxpbkvpP3DCPeEV_JwgTJBZEiGwCtF8LUb/exec";
+    const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
     const app = {
-        user: null,
-        db: [],
-
-        toggleAuth() {
-            document.getElementById('login-form').classList.toggle('oculto');
-            document.getElementById('reg-form').classList.toggle('oculto');
+        user: null, db: [], cierres: Array(12).fill(24),
+        
+        async login() {
+            const m = document.getElementById('l_email').value.toLowerCase().trim();
+            const p = document.getElementById('l_pass').value;
+            if(m === "rodri@gmx.com" && p === "1234") {
+                this.user = { n: "Rodrigo (Admin)", m, rol: "jefe" };
+                return this.iniciar();
+            }
+            try {
+                const res = await fetch(WEB_APP_URL);
+                this.db = await res.json();
+                this.cargarCierres();
+                const u = this.db.find(r => r[0]==="USER" && r[2]===m && String(r[3])===p);
+                if(u) {
+                    this.user = { n: u[1], m: u[2], rol: u[4] };
+                    this.iniciar();
+                } else alert("Credenciales incorrectas");
+            } catch(e) { alert("Error de base de datos"); }
         },
 
+        iniciar() {
+            localStorage.setItem('osde_session', JSON.stringify(this.user));
+            document.getElementById('auth-section').classList.add('oculto');
+            document.getElementById('main-section').classList.remove('oculto');
+            document.getElementById('user-name').innerText = "Hola, " + this.user.n;
+            document.getElementById('user-rol').innerText = this.user.rol;
+            if(this.user.rol === "jefe") document.getElementById('admin-btn').classList.remove('oculto');
+            this.render();
+            this.renderCierresUI();
+        },
+
+        async save() {
+            const f = document.getElementById('c_fecha').value;
+            const h = parseFloat(document.getElementById('c_hs').value);
+            const t = document.getElementById('c_tipo').value;
+            const d = document.getElementById('c_det').value;
+            if(!f || !h || !d) return alert("Completa todos los campos");
+
+            const fechaObj = new Date(f + "T12:00:00");
+            const mesIdx = fechaObj.getMonth();
+            const diaCierre = this.cierres[mesIdx];
+            
+            // Lógica de Mes de Pertenencia
+            let mesPertenencia = (fechaObj.getDate() > diaCierre) ? (mesIdx + 1) : mesIdx;
+            if(mesPertenencia > 11) mesPertenencia = 0; // Salto de año
+
+            // Calcular acumulado
+            const acumulado = this.getAcumulado(this.user.m, mesPertenencia);
+            let hMesActual = h;
+            let hExcedente = 0;
+
+            if(acumulado + h > 30) {
+                hMesActual = 30 - acumulado;
+                hExcedente = h - hMesActual;
+                alert(`Tope superado. Se cargan ${hMesActual}hs este mes y ${hExcedente}hs como EXCEDENTE al mes siguiente.`);
+            }
+
+            const btn = document.getElementById('save-btn');
+            btn.innerText = "GUARDANDO..."; btn.disabled = true;
+
+            // Carga 1
+            if(hMesActual > 0) {
+                await this.post({type:"carga", n:this.user.n, u:this.user.m, d, h:hMesActual, p:t, mes:mesPertenencia, tk:""});
+            }
+            // Carga 2 (Sobrante)
+            if(hExcedente > 0) {
+                let mesSiguiente = mesPertenencia + 1;
+                if(mesSiguiente > 11) mesSiguiente = 0;
+                await this.post({type:"carga", n:this.user.n, u:this.user.m, d: d + " (SOBRANTE)", h:hExcedente, p:t, mes:mesSiguiente, tk:""});
+            }
+
+            location.reload();
+        },
+
+        getAcumulado(m, mesIdx) {
+            return this.db.filter(r => r[0]==="DATA" && r[2]===m && r[3]===mesIdx)
+                          .reduce((sum, r) => sum + parseFloat(r[6]), 0);
+        },
+
+        render() {
+            const mActual = new Date().getMonth();
+            const total = this.getAcumulado(this.user.m, mActual);
+            document.getElementById('hs-count').innerText = `${total} / 30hs`;
+            const bar = document.getElementById('bar');
+            const porc = (total / 30) * 100;
+            bar.style.width = porc + "%";
+            bar.className = "progress " + (total < 20 ? "verde" : total < 30 ? "naranja" : "rojo");
+
+            this.renderLista('lista-user', this.user.m);
+            if(this.user.rol === "jefe") {
+                this.renderLista('lista-admin', null);
+                this.renderUsuarios();
+            }
+        },
+
+        renderLista(divId, emailFiltro) {
+            const div = document.getElementById(divId);
+            div.innerHTML = "";
+            const data = this.db.filter(r => r[0]==="DATA" && (emailFiltro ? r[2]===emailFiltro : true));
+            
+            MESES.forEach((m, idx) => {
+                const mesData = data.filter(r => r[3] == idx);
+                if(mesData.length > 0) {
+                    div.innerHTML += `<div class="mes-group">Horas de ${m}</div>`;
+                    let html = `<table><thead><tr>${!emailFiltro?'<th>User</th>':''}<th>Fecha</th><th>Tarea</th><th>Hs</th></tr></thead><tbody>`;
+                    mesData.forEach(r => {
+                        html += `<tr>${!emailFiltro?`<td><b>${r[1]}</b></td>`:''}<td>${new Date(r[4]).toLocaleDateString()}</td><td>${r[5]}</td><td>${r[6]} hs (${r[7]}%)</td></tr>`;
+                    });
+                    div.innerHTML += html + `</tbody></table>`;
+                }
+            });
+        },
+
+        renderUsuarios() {
+            const t = document.getElementById('tabla-usuarios');
+            t.innerHTML = "";
+            this.db.filter(r => r[0]==="USER").forEach(u => {
+                t.innerHTML += `<tr>
+                    <td>${u[1]}</td><td>${u[2]}</td><td>${u[4]}</td>
+                    <td>
+                        <button onclick="app.setRol('${u[2]}','${u[4]=='jefe'?'usuario':'jefe'}')">Cambiar Rol</button>
+                        <button style="color:red" onclick="app.deleteUser('${u[2]}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        },
+
+        async post(body) { return fetch(WEB_APP_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(body)}); },
+        setToday() { document.getElementById('c_fecha').valueAsDate = new Date(); },
         tab(e, id) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
             e.currentTarget.classList.add('active');
         },
-
-        async login() {
-            const m = document.getElementById('l_email').value.toLowerCase().trim();
-            const p = document.getElementById('l_pass').value;
-
-            // BYPASS RODRI ADMIN PRINCIPAL
-            if(m === "rodri@gmx.com" && p === "1234") {
-                this.user = { n: "Rodrigo (Admin)", m: m, admin: true };
-                return this.entrar();
+        subTab(id) {
+            document.querySelectorAll('.sub-tab').forEach(c => c.classList.add('oculto'));
+            document.getElementById('sub-' + id).classList.remove('oculto');
+        },
+        toggleAuth() {
+            document.getElementById('login-form').classList.toggle('oculto');
+            document.getElementById('reg-form').classList.toggle('oculto');
+        },
+        cargarCierres() {
+            this.db.filter(r => r[0]==="CIERRE").forEach(c => { this.cierres[c[1]] = c[2]; });
+        },
+        renderCierresUI() {
+            const grid = document.getElementById('cierre-grid-ui');
+            grid.innerHTML = "";
+            this.cierres.forEach((dia, i) => {
+                grid.innerHTML += `<div class="cierre-box"><span>${MESES[i].substring(0,3)}</span><input type="number" class="dia-val" data-idx="${i}" value="${dia}"></div>`;
+            });
+        },
+        async saveCierres() {
+            const inputs = document.querySelectorAll('.dia-val');
+            for(let i=0; i<inputs.length; i++) {
+                await this.post({type:"cierre", mes:i, dia:inputs[i].value});
             }
-
-            try {
-                const res = await fetch(WEB_APP_URL);
-                this.db = await res.json();
-                const u = this.db.find(r => r[0] === "USER" && r[2] === m && String(r[3]) === String(p));
-                if(u) {
-                    this.user = { n: u[1], m: u[2], admin: false };
-                    this.entrar();
-                } else { alert("Usuario o clave incorrectos."); }
-            } catch(e) { alert("Error al conectar con la base de datos de OSDE."); }
+            alert("Calendario actualizado"); location.reload();
         },
-
-        async register() {
-            const n = document.getElementById('r_name').value;
-            const m = document.getElementById('r_email').value.toLowerCase().trim();
-            const p = document.getElementById('r_pass').value;
-            if(!m.endsWith("@osde.com.ar")) return alert("Solo se permiten emails @osde.com.ar");
-            if(!n || !p) return alert("Completa todos los campos.");
-
-            await fetch(WEB_APP_URL, { 
-                method: 'POST', mode: 'no-cors', 
-                body: JSON.stringify({type: "registro", n, m, p}) 
-            });
-            alert("Cuenta creada con éxito. Ya podés ingresar.");
-            this.toggleAuth();
-        },
-
-        async entrar() {
-            document.getElementById('auth-section').classList.add('oculto');
-            document.getElementById('main-section').classList.remove('oculto');
-            document.getElementById('user-display').innerText = "CONECTADO: " + this.user.n;
-            if(this.user.admin) document.getElementById('tab-admin-btn').classList.remove('oculto');
-            this.render();
-        },
-
-        async render() {
-            if(this.db.length === 0) {
-                const res = await fetch(WEB_APP_URL);
-                this.db = await res.json();
-            }
-            const tUser = document.getElementById('tabla-user');
-            const tAdmin = document.getElementById('tabla-admin');
-            tUser.innerHTML = ""; tAdmin.innerHTML = "";
-
-            const cargas = this.db.filter(r => r[0] === "DATA").reverse();
-            
-            cargas.forEach(r => {
-                const badge = `<span class="badge ${r[7]=='100'?'b-100':'b-50'}">${r[7]}%</span>`;
-                const fecha = new Date(r[4]).toLocaleDateString();
-                
-                if(r[2] === this.user.m) {
-                    tUser.innerHTML += `<tr><td>${fecha}</td><td>${r[5]}</td><td>${r[6]} hs</td><td>${badge}</td><td>${r[8]||'-'}</td></tr>`;
-                }
-                if(this.user.admin) {
-                    tAdmin.innerHTML += `<tr><td><b>${r[1]}</b></td><td>${fecha}</td><td>${r[5]}</td><td>${r[6]}</td><td>${badge}</td></tr>`;
-                }
-            });
-        },
-
-        async save() {
-            const d = document.getElementById('c_det').value;
-            const h = document.getElementById('c_hs').value;
-            const p = document.getElementById('c_tipo').value;
-            const tk = document.getElementById('c_tk').value;
-            if(!d || !h) return alert("Cargá el detalle y las horas.");
-
-            document.getElementById('btn-save').innerText = "GUARDANDO...";
-            await fetch(WEB_APP_URL, { 
-                method: 'POST', mode: 'no-cors', 
-                body: JSON.stringify({type:"carga", n:this.user.n, u:this.user.m, d, h, p, tk}) 
-            });
-            alert("¡Guardado en el Excel de OSDE!");
-            location.reload();
-        },
-
-        async sugerir() {
-            const msg = document.getElementById('s_msg').value;
-            if(!msg) return;
-            await fetch(WEB_APP_URL, { 
-                method: 'POST', mode: 'no-cors', 
-                body: JSON.stringify({type: "sugerencia", u: this.user.m, msg}) 
-            });
-            alert("Sugerencia enviada. ¡Gracias!");
-            document.getElementById('s_msg').value = "";
-        },
-
-        filtrar(id) {
-            const val = event.target.value.toLowerCase();
-            document.querySelectorAll(`#${id} tr`).forEach(tr => {
-                tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none";
-            });
-        }
+        async setRol(m, newRol) { await this.post({type:"rol", m, newRol}); location.reload(); },
+        async deleteUser(m) { if(confirm("¿Borrar usuario y todas sus horas?")) { await this.post({type:"delete_user", m}); location.reload(); }},
+        logout() { localStorage.clear(); location.reload(); }
     };
+
+    // Auto-login
+    const session = localStorage.getItem('osde_session');
+    if(session) { 
+        app.user = JSON.parse(session);
+        fetch(WEB_APP_URL).then(res => res.json()).then(data => { app.db = data; app.cargarCierres(); app.iniciar(); });
+    }
 </script>
 </body>
 </html>
