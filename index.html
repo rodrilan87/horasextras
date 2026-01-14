@@ -3,12 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <title>Horas Extras</title>
+
 <style>
-body { font-family: Arial; max-width: 800px; margin: auto; }
-input, select, textarea, button { width: 100%; margin: 5px 0; }
-.hidden { display: none; }
-.ok { color: green; }
-.err { color: red; }
+body {
+  font-family: Arial, sans-serif;
+  max-width: 700px;
+  margin: auto;
+}
+input, select, textarea, button {
+  width: 100%;
+  margin: 6px 0;
+  padding: 6px;
+}
+button {
+  cursor: pointer;
+}
+.hidden {
+  display: none;
+}
+.ok {
+  color: green;
+}
+.err {
+  color: red;
+}
 </style>
 </head>
 
@@ -27,28 +45,41 @@ input, select, textarea, button { width: 100%; margin: 5px 0; }
 <hr>
 
 <div id="app" class="hidden">
-  <h3>Cargar horas</h3>
 
+  <h3>Cargar horas extras</h3>
+
+  <label>Fecha</label>
   <input type="date" id="fecha">
+
+  <label>Hora desde</label>
   <input type="time" id="desde">
+
+  <label>Hora hasta</label>
   <input type="time" id="hasta">
 
+  <label>Tipo</label>
   <select id="porcentaje">
     <option value="50%">50%</option>
     <option value="100%">100%</option>
   </select>
 
-  <input id="tk" placeholder="TK / ID">
+  <label>TK / ID</label>
+  <input id="tk">
+
+  <label>Sugerencia (máx 50 palabras)</label>
   <textarea id="sugerencia" maxlength="50"></textarea>
 
-  <button onclick="guardar()">Guardar</button>
+  <button onclick="guardar()">Guardar horas</button>
 
-  <h3>Mis horas</h3>
+  <hr>
+
+  <h3>Mis registros</h3>
   <div id="tabla"></div>
+
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbyx12wVbgiRP1hQTkDNDY0SJwZF2JJnORaBT653QpzbUFpZVzOhH7lFZyRy4DBJzgDrog/exec";
+const API = "https://script.google.com/macros/s/AKfycbxyD6xudm2_eaKy1D6H31hXSSYHtrnc-8Aa2Mr1vl9VeSp6830cpxRH2w6i2kDbEe0IJA/exec";
 let EMAIL = "";
 
 function login() {
@@ -71,7 +102,7 @@ function registrar() {
     .then(r => r.json())
     .then(d => {
       msg.innerHTML = d.ok
-        ? `<span class="ok">Registrado</span>`
+        ? `<span class="ok">Usuario registrado</span>`
         : `<span class="err">${d.error}</span>`;
     });
 }
@@ -81,18 +112,48 @@ function guardar() {
     (new Date(`1970-01-01T${hasta.value}`) -
      new Date(`1970-01-01T${desde.value}`)) / 3600000;
 
-  fetch(`${API}?action=cargarHoras&email=${EMAIL}&fecha=${fecha.value}&desde=${desde.value}&hasta=${hasta.value}&horas=${horas}&porcentaje=${porcentaje.value}&sugerencia=${sugerencia.value}&tk=${tk.value}`)
-    .then(r => r.json())
-    .then(() => listar());
+  if (horas <= 0) {
+    alert("Horario inválido");
+    return;
+  }
+
+  fetch(
+    `${API}?action=cargarHoras` +
+    `&email=${EMAIL}` +
+    `&fecha=${fecha.value}` +
+    `&desde=${desde.value}` +
+    `&hasta=${hasta.value}` +
+    `&horas=${horas}` +
+    `&porcentaje=${porcentaje.value}` +
+    `&sugerencia=${sugerencia.value}` +
+    `&tk=${tk.value}`
+  )
+  .then(r => r.json())
+  .then(() => listar());
 }
 
 function listar() {
   fetch(`${API}?action=listar&email=${EMAIL}`)
     .then(r => r.json())
     .then(data => {
-      let html = "<table border=1><tr><th>Fecha</th><th>Horas</th><th>%</th><th>Mes</th></tr>";
+      let html = `
+        <table border="1" width="100%">
+        <tr>
+          <th>Fecha</th>
+          <th>Horas</th>
+          <th>%</th>
+          <th>Mes</th>
+          <th>TK</th>
+        </tr>`;
       data.forEach(r => {
-        html += `<tr><td>${r[3]}</td><td>${r[6]}</td><td>${r[7]}</td><td>${r[9]}</td></tr>`;
+        html += `
+          <tr>
+            <td>${r[3]}</td>
+            <td>${r[6]}</td>
+            <td>${r[7]}</td>
+            <td>${r[9]}</td>
+            <td>${r[10]}</td>
+          </tr>`;
       });
       tabla.innerHTML = html + "</table>";
     });
