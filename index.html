@@ -3,180 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA OSDE - FULL</title>
+    <title>SISTEMA GESTIÓN OSDE v26.4 - PRO</title>
     <style>
-        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; max-width: 800px; border-top: 6px solid var(--navy); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; }
-        .btn-navy { background: var(--navy); }
-        .btn-orange { background: var(--orange); margin-top: 10px; }
+        :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --gray: #f4f4f4; --green: #27ae60; --red: #dc3545; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 1000px; margin: auto; }
+        
+        /* Estética Cards */
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin-bottom: 20px; border-top: 6px solid var(--navy); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gray); padding-bottom: 15px; margin-bottom: 20px; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+        
+        /* Tabs Nav */
+        .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; overflow-x: auto; }
+        .tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; color: #777; white-space: nowrap; transition: 0.3s; }
+        .tab-btn.active { color: var(--sky); border-bottom: 3px solid var(--sky); }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+
+        /* Formulario */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full { grid-column: span 2; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: var(--navy); font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; color: white; }
+        .btn-main { background: var(--sky); width: 100%; }
+        .btn-orange { background: var(--orange); margin-top: 15px; }
+        .btn-logout { background: var(--red); font-size: 12px; padding: 8px 15px; }
+        
+        /* Tablas */
+        .table-res { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th { background: var(--navy); color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .b-50 { background: #fff3cd; color: #856404; }
+        .b-100 { background: #d4edda; color: #155724; }
+
         .oculto { display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th { background: #eee; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Changelog */
+        .log-item { border-left: 4px solid var(--orange); padding-left: 15px; margin-bottom: 15px; background: #fffaf0; padding: 10px; border-radius: 0 8px 8px 0; }
     </style>
 </head>
 <body>
 
-    <div id="auth-box" class="card" style="max-width: 400px; margin-top: 50px;">
-        <h2 style="text-align: center; color: var(--navy);">OSDE GESTIÓN</h2>
-        <div id="login-form">
-            <input type="email" id="l_email" placeholder="Email corporativo">
-            <input type="password" id="l_pass" placeholder="Contraseña">
-            <button class="btn btn-navy" onclick="app.login()">INGRESAR</button>
-            <p style="text-align: center; font-size: 13px; cursor: pointer; color: var(--sky);" onclick="app.toggle()">¿No tenés cuenta? Registrate</p>
+<div class="container">
+    <div id="auth-section" class="card" style="max-width: 400px; margin: 60px auto;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div class="logo">OSDE <span style="color:var(--sky)">PORTAL</span></div>
+            <p style="color: #666; font-size: 14px;">Ingreso exclusivo colaboradores</p>
         </div>
-        <div id="reg-form" class="oculto">
-            <input type="text" id="r_name" placeholder="Nombre completo">
-            <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-            <input type="password" id="r_pass" placeholder="Contraseña">
-            <button class="btn" style="background: #27ae60;" onclick="app.register()">CREAR CUENTA</button>
-            <p style="text-align: center; font-size: 13px; cursor: pointer; color: var(--sky);" onclick="app.toggle()">Volver al Login</p>
-        </div>
-    </div>
-
-    <div id="dash" class="card oculto">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="txt_bienvenida"></h3>
-            <button onclick="location.reload()" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px;">SALIR</button>
-        </div>
-        <div class="grid">
-            <div style="grid-column: span 2;">
-                <label>Detalle de Tarea</label>
-                <input type="text" id="c_det" placeholder="Ej: Guardia Sábado 17/01">
-            </div>
-            <div>
-                <label>Horas</label>
-                <input type="number" id="c_hs" step="0.5" placeholder="Ej: 2.5">
-            </div>
-            <div>
-                <label>Tipo</label>
-                <select id="c_tipo">
-                    <option value="50">Al 50%</option>
-                    <option value="100">Al 100%</option>
-                </select>
-            </div>
-            <div style="grid-column: span 2;">
-                <label>Tickets / Observaciones</label>
-                <input type="text" id="c_tk" placeholder="TK-99999">
-            </div>
-        </div>
-        <button class="btn btn-orange" id="btn-save" onclick="app.save()">GUARDAR JORNADA</button>
         
-        <div style="margin-top: 30px;">
-            <h4>Registros en Base de Datos</h4>
-            <input type="text" id="filtro" placeholder="🔍 Filtrar..." onkeyup="app.filtrar()" style="padding: 8px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th id="th-user" class="oculto">Usuario</th>
-                        <th>Fecha</th>
-                        <th>Detalle</th>
-                        <th>Horas</th>
-                        <th>Tipo</th>
-                    </tr>
-                </thead>
-                <tbody id="lista"></tbody>
-            </table>
+        <div id="login-form">
+            <label>Email Corporativo</label>
+            <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
+            <label>Contraseña</label>
+            <input type="password" id="l_pass" placeholder="••••••••">
+            <button class="btn btn-main" onclick="app.login()">ENTRAR AL SISTEMA</button>
+            <p style="text-align:center; font-size:13px; margin-top:15px;">¿No tenés cuenta? <span onclick="app.toggleAuth()" style="color:var(--sky); cursor:pointer; font-weight:bold;">Registrate</span></p>
+        </div>
+
+        <div id="reg-form" class="oculto">
+            <label>Nombre Completo</label>
+            <input type="text" id="r_name">
+            <label>Email (@osde.com.ar)</label>
+            <input type="email" id="r_email">
+            <label>Crear Contraseña</label>
+            <input type="password" id="r_pass">
+            <button class="btn btn-main" style="background:var(--green)" onclick="app.register()">CREAR CUENTA</button>
+            <p onclick="app.toggleAuth()" style="text-align:center; cursor:pointer; font-size:13px; margin-top:15px; color:var(--sky);">Volver al inicio</p>
         </div>
     </div>
 
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzIcj0z-zuhlSAIDA4KExZ7y7aoRp4N58KHpLSJvd9rRvyjOFvMUAhjaHy4oWhNIvlZ/exec";
+    <div id="main-section" class="oculto">
+        <div class="card">
+            <div class="header">
+                <div>
+                    <div class="logo">OSDE <span style="color:var(--sky)">SISTEMA</span></div>
+                    <div id="user-display" style="font-size: 14px; color: #666; font-weight: bold;"></div>
+                </div>
+                <button class="btn btn-logout" onclick="location.reload()">CERRAR SESIÓN</button>
+            </div>
 
-        const app = {
-            currentUser: null,
-            data: [],
-            toggle() {
-                document.getElementById('login-form').classList.toggle('oculto');
-                document.getElementById('reg-form').classList.toggle('oculto');
-            },
-            async login() {
-                const m = document.getElementById('l_email').value.toLowerCase().trim();
-                const p = document.getElementById('l_pass').value;
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="app.tab(event, 'carga')">NUEVA CARGA</button>
+                <button class="tab-btn" onclick="app.tab(event, 'mis-datos')">MIS REGISTROS</button>
+                <button class="tab-btn" onclick="app.tab(event, 'extras')">EXTRAS & SOPORTE</button>
+                <button id="tab-admin-btn" class="tab-btn oculto" style="color:var(--orange)" onclick="app.tab(event, 'admin')">PANEL ADMIN ★</button>
+            </div>
 
-                // BYPASS ADMIN
-                if(m === "rodri@gmx.com" && p === "1234") {
-                    this.currentUser = { n: "Admin", m: m, admin: true };
-                    return this.entrar();
-                }
+            <div id="tab-carga" class="tab-content active">
+                <div class="grid">
+                    <div class="full">
+                        <label>Detalle de la Tarea (Día y Horarios)</label>
+                        <input type="text" id="c_det" placeholder="Ej: Sabado 17/01 - 14:00 a 18:00">
+                    </div>
+                    <div>
+                        <label>Cantidad de Horas</label>
+                        <input type="number" id="c_hs" step="0.5" placeholder="Ej: 4">
+                    </div>
+                    <div>
+                        <label>Tipo de Compensación</label>
+                        <select id="c_tipo">
+                            <option value="50">Al 50% (Sábados / Días hábiles)</option>
+                            <option value="100">Al 100% (Feriados / Domingos)</option>
+                        </select>
+                    </div>
+                    <div class="full">
+                        <label>Tickets asociados / Proyecto</label>
+                        <input type="text" id="c_tk" placeholder="TK-1234, TK-5678">
+                    </div>
+                </div>
+                <button class="btn btn-orange btn-main" id="btn-save" onclick="app.save()">GUARDAR EN PLANILLA DE GOOGLE</button>
+            </div>
 
-                try {
-                    const res = await fetch(WEB_APP_URL);
-                    this.data = await res.json();
-                    const u = this.data.find(r => r[0] === "USER" && r[2] === m && String(r[3]) === String(p));
-                    if(u) {
-                        this.currentUser = { n: u[1], m: u[2], admin: false };
-                        this.entrar();
-                    } else { alert("Datos incorrectos"); }
-                } catch(e) { alert("Error de conexión. Revisá que el script esté en 'Cualquiera'."); }
-            },
-            async register() {
-                const n = document.getElementById('r_name').value;
-                const m = document.getElementById('r_email').value.toLowerCase().trim();
-                const p = document.getElementById('r_pass').value;
-                if(!m.endsWith("@osde.com.ar")) return alert("Solo @osde.com.ar");
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({type: "registro", n, m, p})
-                });
-                alert("Registrado! Logueate.");
-                this.toggle();
-            },
-            async entrar() {
-                document.getElementById('auth-box').classList.add('oculto');
-                document.getElementById('dash').classList.remove('oculto');
-                document.getElementById('txt_bienvenida').innerText = "Hola, " + this.currentUser.n;
-                if(this.currentUser.admin) document.getElementById('th-user').classList.remove('oculto');
-                this.render();
-            },
-            async render() {
-                if(this.data.length === 0) {
-                    const res = await fetch(WEB_APP_URL);
-                    this.data = await res.json();
-                }
-                const lista = document.getElementById('lista');
-                lista.innerHTML = "";
-                const filtrados = this.data.filter(r => {
-                    if(this.currentUser.admin) return r[0] === "DATA";
-                    return r[0] === "DATA" && r[2] === this.currentUser.m;
-                });
-                filtrados.reverse().forEach(r => {
-                    lista.innerHTML += `<tr>
-                        ${this.currentUser.admin ? `<td>${r[1]}</td>` : ''}
-                        <td>${new Date(r[4]).toLocaleDateString()}</td>
-                        <td>${r[5]}</td>
-                        <td>${r[6]} hs</td>
-                        <td>${r[7]}%</td>
-                    </tr>`;
-                });
-            },
-            async save() {
-                const d = document.getElementById('c_det').value;
-                const h = document.getElementById('c_hs').value;
-                const p = document.getElementById('c_tipo').value;
-                const tk = document.getElementById('c_tk').value;
-                if(!d || !h) return alert("Completá detalle y horas");
-                
-                document.getElementById('btn-save').innerText = "GUARDANDO...";
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({type: "carga", n: this.currentUser.n, u: this.currentUser.m, d, h, p, tk})
-                });
-                alert("Guardado!");
-                location.reload();
-            },
-            filtrar() {
-                const val = document.getElementById('filtro').value.toLowerCase();
-                const rows = document.querySelectorAll("#lista tr");
-                rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none");
+            <div id="tab-mis-datos" class="tab-content">
+                <input type="text" id="filtro-user" placeholder="🔍 Buscar en mis registros..." onkeyup="app.filtrar('tabla-user')">
+                <div class="table-res">
+                    <table>
+                        <thead><tr><th>Fecha</th><th>Tarea</th><th>Hs</th><th>%</th><th>Tickets</th></tr></thead>
+                        <tbody id="tabla-user"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-extras" class="tab-content">
+                <div class="grid">
+                    <div>
+                        <h4 style="color:var(--navy)">Changelog v26.4</h4>
+                        <div class="log-item"><b>14/01/2026:</b> Restauración completa de base de datos y diseño Pro. Bypass Admin activado.</div>
+                        <div class="log-item"><b>12/01/2026:</b> Solución al error de "Comunicación con base de datos".</div>
+                    </div>
+                    <div>
+                        <h4 style="color:var(--navy)">Buzón de Sugerencias</h4>
+                        <textarea id="s_msg" rows="4" placeholder="¿Qué función te gustaría agregar al sistema?"></textarea>
+                        <button class="btn btn-main" style="background:var(--navy); margin-top:10px;" onclick="app.sugerir()">ENVIAR SUGERENCIA</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-admin" class="tab-content">
+                <h4 style="color:var(--orange)">Control Total de Cargas (Vista Administrador)</h4>
+                <input type="text" id="filtro-admin" placeholder="🔍 Filtrar por nombre de colaborador..." onkeyup="app.filtrar('tabla-admin')">
+                <div class="table-res">
+                    <table>
+                        <thead><tr><th>Colaborador</th><th>Fecha</th><th>Tarea</th><th>Hs</th><th>%</th></tr></thead>
+                        <tbody id="tabla-admin"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // URL DE TU APP SCRIPT - REEMPLAZALA ACÁ
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCJSHn7KZPyjRxE8I_qvUAYRnAv0uo-ydlTZuKh8hWV2pU__Rzkz8UQx7XbJnbDV7i/exec";
+
+    const app = {
+        user: null,
+        db: [],
+
+        toggleAuth() {
+            document.getElementById('login-form').classList.toggle('oculto');
+            document.getElementById('reg-form').classList.toggle('oculto');
+        },
+
+        tab(e, id) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            e.currentTarget.classList.add('active');
+        },
+
+        async login() {
+            const m = document.getElementById('l_email').value.toLowerCase().trim();
+            const p = document.getElementById('l_pass').value;
+
+            // BYPASS RODRI ADMIN PRINCIPAL
+            if(m === "rodri@gmx.com" && p === "1234") {
+                this.user = { n: "Rodrigo (Admin)", m: m, admin: true };
+                return this.entrar();
             }
-        };
-    </script>
+
+            try {
+                const res = await fetch(WEB_APP_URL);
+                this.db = await res.json();
+                const u = this.db.find(r => r[0] === "USER" && r[2] === m && String(r[3]) === String(p));
+                if(u) {
+                    this.user = { n: u[1], m: u[2], admin: false };
+                    this.entrar();
+                } else { alert("Usuario o clave incorrectos."); }
+            } catch(e) { alert("Error al conectar con la base de datos de OSDE."); }
+        },
+
+        async register() {
+            const n = document.getElementById('r_name').value;
+            const m = document.getElementById('r_email').value.toLowerCase().trim();
+            const p = document.getElementById('r_pass').value;
+            if(!m.endsWith("@osde.com.ar")) return alert("Solo se permiten emails @osde.com.ar");
+            if(!n || !p) return alert("Completa todos los campos.");
+
+            await fetch(WEB_APP_URL, { 
+                method: 'POST', mode: 'no-cors', 
+                body: JSON.stringify({type: "registro", n, m, p}) 
+            });
+            alert("Cuenta creada con éxito. Ya podés ingresar.");
+            this.toggleAuth();
+        },
+
+        async entrar() {
+            document.getElementById('auth-section').classList.add('oculto');
+            document.getElementById('main-section').classList.remove('oculto');
+            document.getElementById('user-display').innerText = "CONECTADO: " + this.user.n;
+            if(this.user.admin) document.getElementById('tab-admin-btn').classList.remove('oculto');
+            this.render();
+        },
+
+        async render() {
+            if(this.db.length === 0) {
+                const res = await fetch(WEB_APP_URL);
+                this.db = await res.json();
+            }
+            const tUser = document.getElementById('tabla-user');
+            const tAdmin = document.getElementById('tabla-admin');
+            tUser.innerHTML = ""; tAdmin.innerHTML = "";
+
+            const cargas = this.db.filter(r => r[0] === "DATA").reverse();
+            
+            cargas.forEach(r => {
+                const badge = `<span class="badge ${r[7]=='100'?'b-100':'b-50'}">${r[7]}%</span>`;
+                const fecha = new Date(r[4]).toLocaleDateString();
+                
+                if(r[2] === this.user.m) {
+                    tUser.innerHTML += `<tr><td>${fecha}</td><td>${r[5]}</td><td>${r[6]} hs</td><td>${badge}</td><td>${r[8]||'-'}</td></tr>`;
+                }
+                if(this.user.admin) {
+                    tAdmin.innerHTML += `<tr><td><b>${r[1]}</b></td><td>${fecha}</td><td>${r[5]}</td><td>${r[6]}</td><td>${badge}</td></tr>`;
+                }
+            });
+        },
+
+        async save() {
+            const d = document.getElementById('c_det').value;
+            const h = document.getElementById('c_hs').value;
+            const p = document.getElementById('c_tipo').value;
+            const tk = document.getElementById('c_tk').value;
+            if(!d || !h) return alert("Cargá el detalle y las horas.");
+
+            document.getElementById('btn-save').innerText = "GUARDANDO...";
+            await fetch(WEB_APP_URL, { 
+                method: 'POST', mode: 'no-cors', 
+                body: JSON.stringify({type:"carga", n:this.user.n, u:this.user.m, d, h, p, tk}) 
+            });
+            alert("¡Guardado en el Excel de OSDE!");
+            location.reload();
+        },
+
+        async sugerir() {
+            const msg = document.getElementById('s_msg').value;
+            if(!msg) return;
+            await fetch(WEB_APP_URL, { 
+                method: 'POST', mode: 'no-cors', 
+                body: JSON.stringify({type: "sugerencia", u: this.user.m, msg}) 
+            });
+            alert("Sugerencia enviada. ¡Gracias!");
+            document.getElementById('s_msg').value = "";
+        },
+
+        filtrar(id) {
+            const val = event.target.value.toLowerCase();
+            document.querySelectorAll(`#${id} tr`).forEach(tr => {
+                tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none";
+            });
+        }
+    };
+</script>
 </body>
 </html>
