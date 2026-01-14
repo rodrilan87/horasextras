@@ -3,46 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA OSDE</title>
+    <title>SISTEMA HORAS OSDE</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        :root { --navy: #2c3e50; --orange: #f39c12; --bg: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; border-radius: 15px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid var(--navy); }
+        h2 { text-align: center; color: var(--navy); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; }
+        .btn-navy { background: var(--navy); }
+        .btn-orange { background: var(--orange); margin-top: 10px; }
         .oculto { display: none; }
+        .link { text-align: center; margin-top: 15px; color: #3498db; cursor: pointer; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div id="auth" class="card">
-        <h2>Ingreso OSDE</h2>
+
+    <div id="auth-box" class="card">
+        <h2>SISTEMA OSDE</h2>
         <div id="login-form">
             <input type="email" id="l_email" placeholder="Email corporativo">
             <input type="password" id="l_pass" placeholder="Contraseña">
-            <button onclick="app.login()">INGRESAR</button>
-            <p onclick="app.toggle()" style="color:blue; cursor:pointer; text-align:center">Registrarse</p>
+            <button class="btn btn-navy" onclick="app.login()">INGRESAR</button>
+            <div class="link" onclick="app.toggle()">¿No tenés cuenta? Registrate acá</div>
         </div>
         <div id="reg-form" class="oculto">
-            <input type="text" id="r_name" placeholder="Nombre completo">
+            <input type="text" id="r_name" placeholder="Nombre Completo">
             <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-            <input type="password" id="r_pass" placeholder="Contraseña">
-            <button onclick="app.register()" style="background: green;">CREAR CUENTA</button>
-            <p onclick="app.toggle()" style="text-align:center; cursor:pointer">Volver</p>
+            <input type="password" id="r_pass" placeholder="Crear Contraseña">
+            <button class="btn" style="background: #27ae60" onclick="app.register()">SOLICITAR ACCESO</button>
+            <div class="link" onclick="app.toggle()">Volver al Login</div>
         </div>
     </div>
 
-    <div id="dash" class="card oculto">
-        <h3 id="bienvenida"></h3>
-        <input type="text" id="c_det" placeholder="¿Qué hiciste hoy?">
-        <button onclick="app.save()" style="background: orange;">GUARDAR JORNADA</button>
-        <button onclick="location.reload()" style="margin-top:10px; background: #999;">SALIR</button>
+    <div id="dash" class="card oculto" style="border-top-color: var(--orange);">
+        <h3 id="txt_bienvenida"></h3>
+        <input type="text" id="c_det" placeholder="Detalle (Ej: 13/01 14 a 16hs)">
+        <button class="btn btn-orange" onclick="app.save()">GUARDAR JORNADA</button>
+        <button class="btn" style="margin-top:20px; background:#e74c3c;" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
     <script>
-        const URL = "https://script.google.com/macros/s/AKfycbwxFZXkbBdKbFWNI5w1j0rs95n-OmOLRXC7izXoAh8U3q1abFVdPqt86hScKNBasusC/exec";
+        // PEGÁ TU LINK DE GOOGLE ABAJO ENTRE LAS COMILLAS
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxsEewuDZIrtrEc-0FmbxsxHcpIKzWY7MtoFybBGxvXY-2nfEJGJ3J_tX3-8o7itVc/exec";
 
         const app = {
             user: null,
-            toggle() { 
+            toggle() {
                 document.getElementById('login-form').classList.toggle('oculto');
                 document.getElementById('reg-form').classList.toggle('oculto');
             },
@@ -50,49 +57,59 @@
                 const n = document.getElementById('r_name').value;
                 const m = document.getElementById('r_email').value.toLowerCase().trim();
                 const p = document.getElementById('r_pass').value;
-                if(!m.endsWith("@osde.com.ar")) return alert("Solo @osde.com.ar");
+                if(!m.endsWith('@osde.com.ar')) return alert("Solo emails @osde.com.ar");
                 
-                await fetch(URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Esto evita el error de CORS
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({type: "registro", n, m, p})
-                });
-                alert("Registrado. Intenta loguearte.");
-                this.toggle();
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({type: "registro", n, m, p})
+                    });
+                    alert("¡Registrado! Ahora iniciá sesión.");
+                    this.toggle();
+                } catch(e) { alert("Error al registrar."); }
             },
             async login() {
                 const m = document.getElementById('l_email').value.toLowerCase().trim();
                 const p = document.getElementById('l_pass').value;
-                
+
                 if(m === "rodri@gmx.com" && p === "1234") {
-                    return this.entrar({n: "Admin", m});
+                    return this.entrar({n: "Rodrigo (Admin)", m: m});
                 }
 
                 try {
-                    const res = await fetch(URL);
+                    const res = await fetch(WEB_APP_URL);
                     const db = await res.json();
+                    // Busca en la columna 2 el mail y en la 3 la contraseña
                     const u = db.find(r => r[2] === m && String(r[3]) === String(p));
-                    if(u) this.entrar({n: u[1], m: u[2]});
-                    else alert("Usuario no encontrado.");
-                } catch(e) { alert("Error de base de datos."); }
+                    
+                    if(u) {
+                        this.entrar({n: u[1], m: u[2]});
+                    } else {
+                        alert("Datos incorrectos o usuario no encontrado.");
+                    }
+                } catch(e) {
+                    alert("Error de conexión con la base de datos.");
+                }
             },
             entrar(u) {
                 this.user = u;
-                document.getElementById('auth').classList.add('oculto');
+                document.getElementById('auth-box').classList.add('oculto');
                 document.getElementById('dash').classList.remove('oculto');
-                document.getElementById('bienvenida').innerText = "Hola, " + u.n;
+                document.getElementById('txt_bienvenida').innerText = "Hola, " + u.n;
             },
             async save() {
-                await fetch(URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        type: "carga", n: this.user.n, u: this.user.m, d: document.getElementById('c_det').value
-                    })
-                });
-                alert("Guardado!");
-                document.getElementById('c_det').value = "";
+                const d = document.getElementById('c_det').value;
+                if(!d) return alert("Escribí el detalle");
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({type: "carga", n: this.user.n, u: this.user.m, d: d})
+                    });
+                    alert("¡Guardado en el Excel!");
+                    document.getElementById('c_det').value = "";
+                } catch(e) { alert("Error al guardar."); }
             }
         };
     </script>
