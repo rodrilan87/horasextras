@@ -1,104 +1,60 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA OSDE - V1.0</title>
+    <title>SISTEMA PRUEBA CONEXIÓN</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 20px; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 400px; margin: 50px auto; }
-        .hidden { display: none; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #003057; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-reg { background: #27ae60; margin-top: 10px; }
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background: #f4f4f4; }
+        .box { background: white; padding: 20px; border-radius: 10px; display: inline-block; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { display: block; margin: 10px auto; padding: 10px; width: 250px; }
+        button { padding: 10px 20px; cursor: pointer; background: #003057; color: white; border: none; }
     </style>
 </head>
 <body>
 
-<div id="auth-box" class="card">
-    <h2 style="text-align:center; color:#003057;">OSDE ACCESO</h2>
-    <div id="login-view">
-        <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
-        <input type="password" id="l_pass" placeholder="Contraseña">
-        <button onclick="app.login()">INGRESAR</button>
-        <p style="text-align:center; cursor:pointer; color:#0076BE;" onclick="app.view(true)">Crear cuenta nueva</p>
-    </div>
-    <div id="reg-view" class="hidden">
-        <input type="text" id="r_name" placeholder="Nombre completo">
-        <input type="email" id="r_email" placeholder="Email @osde.com.ar">
-        <input type="password" id="r_pass" placeholder="Contraseña">
-        <button class="btn-reg" onclick="app.register()">REGISTRARME</button>
-        <p style="text-align:center; cursor:pointer;" onclick="app.view(false)">Volver al login</p>
-    </div>
-</div>
-
-<div id="app-box" class="card hidden" style="max-width: 800px;">
-    <h2 id="saludo"></h2>
-    <div id="status-conexion" style="color: green; font-weight: bold;">● Conectado a Base de Datos</div>
-    <hr>
-    <p>Estamos listos para cargar la interfaz de horarios.</p>
-    <button onclick="location.reload()" style="background:#dc3545;">CERRAR SESIÓN</button>
+<div class="box">
+    <h2>Validación de Conexión</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
+    <button onclick="probarConexion()">PROBAR CONEXIÓN</button>
+    <p id="msg"></p>
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVkTylXVVagn-1WIGRQG4PhW5Zw3SMP557Mfsbc70Xf90GA_IwkwpCap1yqsHsQyxCpQ/exec"; // REEMPLAZA ESTO
+    // 1. PEGA TU URL AQUÍ
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfDZ8_wswDRIoqJTvcnhWKm_q6-8K5bzlelgXSI-bEp0PCZQ9iaTKPdz3ncVh8G1-_bw/exec";
 
-    const app = {
-        user: null,
-        
-        async login() {
-            const m = document.getElementById('l_email').value.toLowerCase().trim();
-            const p = document.getElementById('l_pass').value;
+    async function probarConexion() {
+        const email = document.getElementById('email').value.toLowerCase().trim();
+        const pass = document.getElementById('pass').value;
+        const msg = document.getElementById('msg');
 
-            // 1. Caso especial Admin (según tus instrucciones)
-            if (m === "rodri@gmx.com" && p === "1234") {
-                this.user = { n: "Rodrigo", m: m, r: "jefe" };
-                this.showApp();
-                return;
-            }
+        msg.innerText = "Conectando...";
 
-            // 2. Usuarios de la Planilla
-            try {
-                const res = await fetch(WEB_APP_URL);
-                const db = await res.json();
-                const u = db.find(r => r[0]==="USER" && r[2]===m && String(r[3])===p);
-                
-                if(u) {
-                    this.user = { n: u[1], m: u[2], r: u[4] };
-                    this.showApp();
-                } else {
-                    alert("Usuario o clave no válidos.");
-                }
-            } catch(e) { alert("Error de conexión."); }
-        },
-
-        async register() {
-            const n = document.getElementById('r_name').value;
-            const m = document.getElementById('r_email').value.toLowerCase().trim();
-            const p = document.getElementById('r_pass').value;
-
-            if(!m.endsWith("@osde.com.ar")) return alert("Solo correos @osde.com.ar");
-
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({type: "registro", n, m, p})
-            });
-            alert("¡Registrado! Ya podés loguearte.");
-            this.view(false);
-        },
-
-        showApp() {
-            document.getElementById('auth-box').classList.add('hidden');
-            document.getElementById('app-box').classList.remove('hidden');
-            document.getElementById('saludo').innerText = "Hola, " + this.user.n;
-        },
-
-        view(reg) {
-            document.getElementById('login-view').className = reg ? 'hidden' : '';
-            document.getElementById('reg-view').className = reg ? '' : 'hidden';
+        // PRUEBA DIRECTA ADMIN
+        if (email === "rodri@gmx.com" && pass === "1234") {
+            msg.style.color = "green";
+            msg.innerText = "¡CONEXIÓN EXITOSA! Usuario Admin reconocido.";
+            return;
         }
-    };
+
+        // PRUEBA CONTRA BASE DE DATOS
+        try {
+            const response = await fetch(WEB_APP_URL);
+            if (!response.ok) throw new Error("Error en respuesta");
+            
+            const data = await response.json();
+            console.log("Datos recibidos:", data);
+            
+            msg.style.color = "blue";
+            msg.innerText = "CONEXIÓN CON PLANILLA OK. Datos leídos correctamente.";
+            
+        } catch (error) {
+            msg.style.color = "red";
+            msg.innerText = "ERROR: No se pudo conectar con la URL de Apps Script. Revisa la implementación.";
+            console.error(error);
+        }
+    }
 </script>
 </body>
 </html>
