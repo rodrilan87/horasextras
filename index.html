@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA GESTIÓN OSDE - FULL</title>
+    <title>SISTEMA OSDE - FULL</title>
     <style>
         :root { --navy: #003057; --sky: #0076BE; --orange: #E87722; --green: #27ae60; --red: #dc3545; }
         body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 10px; }
-        .container { max-width: 1000px; margin: auto; }
+        .container { max-width: 950px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 8px solid var(--navy); }
         
         /* Semáforo */
@@ -15,17 +15,16 @@
         .bar-bg { background: #eee; height: 16px; border-radius: 10px; overflow: hidden; margin-top: 8px; }
         .bar-fill { height: 100%; transition: 1s ease; width: 0%; background: var(--green); }
 
-        /* COLORES SOLICITADOS EN IMAGEN */
-        .box-rosa { border: 2px solid #ff00ff44; padding: 15px; border-radius: 10px; background: #fffaff; }
-        .box-verde { border: 2px solid #00ff0044; padding: 15px; border-radius: 10px; background: #fafffa; }
-        .box-naranja { border: 2px solid var(--orange); padding: 15px; border-radius: 10px; }
+        /* COLORES SOLICITADOS */
+        .box-rosa { border: 2px solid #ff00ff66; padding: 15px; border-radius: 10px; background: #fffaff; margin-bottom: 10px; }
+        .box-verde { border: 2px solid #00ff0066; padding: 15px; border-radius: 10px; background: #fafffa; margin-bottom: 10px; }
+        .box-naranja { border: 2px solid var(--orange); padding: 15px; border-radius: 10px; margin-bottom: 10px; }
 
         .oculto { display: none !important; }
         input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; width: 100%; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         
-        /* Tabs y Tablas */
         .tab-nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
         .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; }
         .tab-btn.active { color: var(--sky); border-bottom: 4px solid var(--sky); }
@@ -38,18 +37,18 @@
 
 <div class="container">
     <div id="auth-section" class="card" style="max-width: 400px; margin: 60px auto;">
-        <h2 style="text-align:center; color:var(--navy)">OSDE PORTAL</h2>
+        <h2 style="text-align:center; color:var(--navy)">OSDE <span style="color:var(--sky)">PORTAL</span></h2>
         <div id="login-form">
-            <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
+            <input type="email" id="l_email" placeholder="usuario@osde.com.ar o rodri@gmx.com">
             <input type="password" id="l_pass" placeholder="Contraseña" style="margin-top:10px;">
             <button class="btn" style="background:var(--navy); margin-top:15px;" onclick="app.login()">Entrar</button>
-            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; color:var(--sky); cursor:pointer; margin-top:20px;">Crear cuenta nueva</p>
+            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; color:var(--sky); cursor:pointer; margin-top:20px;">Registrar cuenta @osde.com.ar</p>
         </div>
         <div id="reg-form" class="oculto">
             <input type="text" id="r_name" placeholder="Nombre completo">
             <input type="email" id="r_email" placeholder="usuario@osde.com.ar" style="margin-top:10px;">
             <input type="password" id="r_pass" placeholder="Contraseña" style="margin-top:10px;">
-            <button class="btn" style="background:var(--green); margin-top:15px;" onclick="app.register()">Registrar</button>
+            <button class="btn" style="background:var(--green); margin-top:15px;" onclick="app.register()">Crear Cuenta</button>
             <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; cursor:pointer; margin-top:20px;">Volver</p>
         </div>
     </div>
@@ -63,15 +62,15 @@
 
             <div class="semaforo-box">
                 <div style="display:flex; justify-content:space-between">
-                    <span>Horas este mes:</span>
+                    <span>Horas consumidas este mes:</span>
                     <b id="hs-txt">0 / 30hs</b>
                 </div>
                 <div class="bar-bg"><div id="hs-bar" class="bar-fill"></div></div>
             </div>
 
             <div class="tab-nav">
-                <button class="tab-btn active" onclick="app.tab(event, 'carga')">Carga</button>
-                <button class="tab-btn" onclick="app.tab(event, 'historial')">Mis Datos</button>
+                <button class="tab-btn active" onclick="app.tab(event, 'carga')">Cargar Horas</button>
+                <button class="tab-btn" onclick="app.tab(event, 'historial')">Mis Registros</button>
                 <button id="btn-admin" class="tab-btn oculto" onclick="app.tab(event, 'admin')">Panel Jefe ★</button>
             </div>
 
@@ -81,72 +80,69 @@
                         <label>Fecha:</label>
                         <input type="date" id="c_fecha">
                     </div>
-                    <div class="box-rosa" style="grid-column: span 2; display:flex; gap:10px;">
-                        <div><label>Desde:</label><input type="time" id="c_desde"></div>
-                        <div><label>Hasta:</label><input type="time" id="c_hasta"></div>
-                        <div><label>Horas:</label><input type="number" id="c_hs" step="0.5"></div>
+                    <div class="box-rosa" style="grid-column: span 2; display: flex; gap: 10px;">
+                        <div style="flex:1"><label>Desde:</label><input type="time" id="c_desde"></div>
+                        <div style="flex:1"><label>Hasta:</label><input type="time" id="c_hasta"></div>
+                        <div style="flex:1"><label>Cant. Horas:</label><input type="number" id="c_hs" step="0.5"></div>
                     </div>
                 </div>
+
                 <div class="grid" style="margin-top:15px;">
                     <div class="box-verde">
-                        <label>Compensación:</label>
+                        <label>Tipo:</label>
                         <select id="c_tipo"><option value="50">50%</option><option value="100">100%</option></select>
                     </div>
                     <div class="box-naranja" style="grid-column: span 2;">
                         <label>Tarea / Ticket:</label>
-                        <input type="text" id="c_tk" placeholder="Detalle">
+                        <input type="text" id="c_tk" placeholder="Descripción">
                     </div>
                 </div>
+
                 <div style="margin-top:15px;">
                     <label>Sugerencias (Máx 50 palabras):</label>
-                    <textarea id="c_sug" rows="2" maxlength="250"></textarea>
+                    <textarea id="c_sug" rows="2" maxlength="300"></textarea>
                 </div>
-                <button class="btn" style="background:var(--orange); margin-top:20px;" id="btn-save" onclick="app.save()">Guardar</button>
+                <button class="btn" style="background:var(--orange); margin-top:20px;" id="btn-save" onclick="app.save()">GUARDAR JORNADA</button>
             </div>
 
             <div id="tab-historial" class="tab-content oculto">
-                <div id="user-history"></div>
+                <div id="user-history-table"></div>
             </div>
 
             <div id="tab-admin" class="tab-content oculto">
-                <h3>Auditoría de Equipo</h3>
-                <div id="admin-history"></div>
-                <hr>
-                <h3>Gestión de Usuarios</h3>
-                <table id="user-table"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acción</th></tr></thead><tbody id="user-tbody"></tbody></table>
+                <div id="admin-audit-table"></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2k9ZhfHkS1gGFnClkrj8XXMRf741igfi502nBmobvzlge1z5ecDOKXSq8z1iRRKzc/exec"; 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbymTJrOkHWuPXx6KlYMGNTlFRK-xxpyiIdu5_KU_0cXaqsXEyLs7iGm1982oppWmK81/exec"; 
 
     const app = {
         user: null, db: [],
-        
+
         async login() {
             const m = document.getElementById('l_email').value.toLowerCase().trim();
             const p = document.getElementById('l_pass').value;
 
-            // Validación de acceso incluyendo rodri@gmx.com
-            if ((m.endsWith("@osde.com.ar") || m === "rodri@gmx.com") && p !== "") {
+            // Validación: Solo @osde.com.ar o rodri@gmx.com
+            if (m === "rodri@gmx.com" || m.endsWith("@osde.com.ar")) {
                 try {
                     const res = await fetch(WEB_APP_URL);
                     this.db = await res.json();
                     
-                    // Si es el admin principal, le damos rol de jefe
-                    if(m === "rodri@gmx.com") {
+                    // Lógica para rodri@gmx.com como jefe
+                    if(m === "rodri@gmx.com" && p === "1234") {
                         this.user = { n: "Rodrigo", m: m, rol: "jefe" };
                     } else {
                         const u = this.db.find(r => r[0]==="USER" && r[2]===m && String(r[3])===p);
-                        if(!u) return alert("Usuario no encontrado o clave incorrecta.");
+                        if(!u) return alert("Credenciales incorrectas.");
                         this.user = { n: u[1], m: u[2], rol: u[4] };
                     }
-                    
                     this.iniciar();
-                } catch(e) { alert("Error de conexión."); }
-            } else { alert("Email no válido."); }
+                } catch(e) { alert("Error de conexión con la base de datos."); }
+            } else { alert("Email no autorizado."); }
         },
 
         async register() {
@@ -161,7 +157,7 @@
         async iniciar() {
             document.getElementById('auth-section').classList.add('oculto');
             document.getElementById('main-section').classList.remove('oculto');
-            document.getElementById('u-saludo').innerText = "Hola, " + this.user.n;
+            document.getElementById('u-saludo').innerText = "Bienvenido, " + this.user.n;
             if(this.user.rol === "jefe") document.getElementById('btn-admin').classList.remove('oculto');
             this.render();
         },
@@ -178,7 +174,7 @@
                 sugerencia: document.getElementById('c_sug').value,
                 mes: new Date().getMonth()
             };
-            document.getElementById('btn-save').innerText = "Guardando...";
+            document.getElementById('btn-save').innerText = "GUARDANDO...";
             await fetch(WEB_APP_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(payload)});
             location.reload();
         },
@@ -186,33 +182,19 @@
         render() {
             const m = new Date().getMonth();
             const logs = this.db.filter(r => r[0]==="DATA" && r[2]===this.user.m && r[3] == m);
-            const tot = logs.reduce((s, r) => s + parseFloat(r[6]), 0);
-            document.getElementById('hs-txt').innerText = `${tot} / 30hs`;
-            document.getElementById('hs-bar').style.width = Math.min((tot/30*100), 100) + "%";
-            
-            this.drawTable('user-history', this.user.m);
-            if(this.user.rol === "jefe") {
-                this.drawTable('admin-history', null);
-                const tbody = document.getElementById('user-tbody'); tbody.innerHTML = "";
-                this.db.filter(r => r[0]==="USER").forEach(u => {
-                    tbody.innerHTML += `<tr><td>${u[1]}</td><td>${u[2]}</td><td>${u[4]}</td><td>
-                        <button onclick="app.setRol('${u[2]}','${u[4]=='jefe'?'usuario':'jefe'}')">Cambiar Rol</button>
-                    </td></tr>`;
-                });
-            }
+            const total = logs.reduce((s, r) => s + parseFloat(r[6] || 0), 0);
+            document.getElementById('hs-txt').innerText = `${total} / 30hs`;
+            document.getElementById('hs-bar').style.width = Math.min((total/30*100), 100) + "%";
+            this.drawTable('user-history-table', this.user.m);
+            if(this.user.rol === "jefe") this.drawTable('admin-audit-table', null);
         },
 
         drawTable(divId, email) {
             const div = document.getElementById(divId);
             const logs = this.db.filter(r => r[0]==="DATA" && (email ? r[2]===email : true));
             let h = `<table><thead><tr>${!email?'<th>Nombre</th>':''}<th>Fecha</th><th>Tarea</th><th>Hs</th></tr></thead><tbody>`;
-            logs.forEach(r => { h += `<tr>${!email?`<td>${r[1]}</td>`:''}<td>${r[4]}</td><td>${r[5]}</td><td>${r[6]} (${r[7]}%)</td></tr>`; });
+            logs.forEach(r => { h += `<tr>${!email?`<td>${r[1]}</td>`:''}<td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}hs</td></tr>`; });
             div.innerHTML = h + "</tbody></table>";
-        },
-
-        async setRol(m, newRol) {
-            await fetch(WEB_APP_URL, {method:'POST', mode:'no-cors', body:JSON.stringify({type:"rol", m, newRol})});
-            location.reload();
         },
 
         toggleAuth() { document.getElementById('login-form').classList.toggle('oculto'); document.getElementById('reg-form').classList.toggle('oculto'); },
