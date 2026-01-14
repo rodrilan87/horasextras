@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA HORAS OSDE</title>
+    <style>
+        :root { 
+            --navy: #2c3e50; --orange: #f39c12; --admin: #9b59b6; 
+            --green: #27ae60; --red: #e74c3c; --bg: #f8f9fa; 
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: none; }
+        
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--navy); font-size: 14px; }
+        input, select { padding: 14px; margin-bottom: 15px; border: 2px solid #eee; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--navy); }
+
+        .btn { border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; width: 100%; font-size: 14px; transition: 0.3s; }
+        .btn-navy { background: var(--navy); }
+        .btn-orange { background: var(--orange); box-shadow: 0 4px 0 #d68910; }
+        .btn-orange:active { transform: translateY(3px); box-shadow: none; }
+        
+        .header { background: var(--navy); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 15px 15px; margin-bottom: 25px; }
+        .oculto { display: none !important; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 8px; overflow: hidden; }
+        th { text-align: left; background: #f2f2f2; padding: 15px; color: var(--navy); text-transform: uppercase; font-size: 12px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 15px; }
+        
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
+        .tag-100 { background: var(--green); }
+        .tag-50 { background: var(--orange); }
+
+        .changelog { background: #f1f1f1; padding: 10px; border-radius: 8px; font-size: 11px; margin-bottom: 15px; border-left: 4px solid var(--admin); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="container" style="max-width: 400px; margin-top: 10vh;">
+            <div class="card" style="text-align: center; border-top: 8px solid var(--navy);">
+                <h2 style="margin-bottom: 30px;">SISTEMA OSDE</h2>
+                <div id="login-box">
+                    <input type="email" id="l_email" placeholder="Tu Email">
+                    <input type="password" id="l_pass" placeholder="Tu Contraseña">
+                    <button class="btn btn-navy" onclick="app.login()">ENTRAR</button>
+                    <p style="font-size: 13px; margin-top: 20px; color: #666;">
+                        ¿No tenés cuenta? <span onclick="app.toggleAuth()" style="color: #3498db; cursor: pointer; font-weight: bold;">Registrate acá</span>
+                    </p>
+                </div>
+                <div id="reg-box" class="oculto">
+                    <input type="text" id="r_name" placeholder="Nombre Completo">
+                    <input type="email" id="r_email" placeholder="Email @osde.com.ar">
+                    <input type="password" id="r_pass" placeholder="Crear Contraseña">
+                    <button class="btn btn-navy" style="background: var(--green);" onclick="app.register()">SOLICITAR ACCESO</button>
+                    <p onclick="app.toggleAuth()" style="color: #666; cursor: pointer; margin-top: 15px;">Volver al inicio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="oculto">
+        <div class="header">
+            <span id="display_user" style="font-size: 18px;"></span>
+            <button class="btn" style="width: auto; padding: 8px 15px; background: rgba(255,255,255,0.2);" onclick="location.reload()">SALIR</button>
+        </div>
+
+        <div class="container">
+            <div id="panel_admin" class="card oculto" style="border-left: 6px solid var(--admin);">
+                <h3 style="color:var(--admin); margin-top:0;">Panel Jefe</h3>
+                <div class="changelog">
+                    <b>v29 Final:</b> Sistema web listo para GitHub. Registro validado y diseño intuitivo.
+                </div>
+                <p>Usuarios esperando aprobación:</p>
+                <table id="tabla_pendientes"><thead><tr><th>Nombre</th><th>Email</th><th>Acción</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <div id="panel_carga" class="card">
+                <h3 style="margin-top: 0; color: var(--navy);">📝 Cargar Nueva Jornada</h3>
+                <label>Detalle (Día y Horas):</label>
+                <input type="text" id="smart_in" placeholder="Ej: 13/01 de 14:00 a 16:30">
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <label>Tickets:</label>
+                        <input type="number" id="tk_in" value="0">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Tipo:</label>
+                        <select id="tipo_in">
+                            <option value="100">Al 100%</option>
+                            <option value="50">Al 50%</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-orange" onclick="app.saveData()">GUARDAR CARGA</button>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0;">📂 Mis Registros</h3>
+                <div id="historial_html"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            users: JSON.parse(localStorage.getItem('osde_users')) || [
+                { n: "Rodrigo Daniel Botta", m: "rodri@gmx.com", p: "1234", r: "jefe", h: true }
+            ],
+            data: JSON.parse(localStorage.getItem('osde_data_v29')) || [],
+            current: null,
+
+            toggleAuth() {
+                document.getElementById('login-box').classList.toggle('oculto');
+                document.getElementById('reg-box').classList.toggle('oculto');
+            },
+
+            register() {
+                const n = document.getElementById('r_name').value;
+                const m = document.getElementById('r_email').value.toLowerCase().trim();
+                const p = document.getElementById('r_pass').value;
+                if(!m.endsWith('@osde.com.ar') && m !== "rodri@gmx.com") return alert("Solo emails @osde.com.ar");
+                if(this.users.find(u => u.m === m)) return alert("El email ya existe");
+
+                this.users.push({ n, m, p, r: "usuario", h: false });
+                localStorage.setItem('osde_users', JSON.stringify(this.users));
+                alert("Solicitud enviada. El Jefe debe habilitarte.");
+                this.toggleAuth();
+            },
+
+            login() {
+                const m = document.getElementById('l_email').value.toLowerCase().trim();
+                const p = document.getElementById('l_pass').value;
+                const u = this.users.find(u => u.m === m && u.p === p);
+                
+                if(!u) return alert("Datos incorrectos");
+                if(!u.h) return alert("Tu cuenta espera aprobación del Jefe");
+
+                this.current = u;
+                document.getElementById('auth-screen').classList.add('oculto');
+                document.getElementById('dashboard').classList.remove('oculto');
+                document.getElementById('display_user').innerText = "Hola, " + u.n;
+                
+                if(u.r === "jefe") {
+                    document.getElementById('panel_admin').classList.remove('oculto');
+                    this.renderPendientes();
+                }
+                this.renderHistorial();
+            },
+
+            renderPendientes() {
+                const tbody = document.querySelector('#tabla_pendientes tbody');
+                tbody.innerHTML = "";
+                const lista = this.users.filter(u => !u.h);
+                lista.forEach(u => {
+                    tbody.innerHTML += `<tr><td>${u.n}</td><td>${u.m}</td><td><button class="btn btn-navy" style="padding:5px; font-size:10px" onclick="app.aprobar('${u.m}')">HABILITAR</button></td></tr>`;
+                });
+                if(lista.length === 0) tbody.innerHTML = "<tr><td colspan='3'>Sin pendientes</td></tr>";
+            },
+
+            aprobar(m) {
+                const i = this.users.findIndex(u => u.m === m);
+                this.users[i].h = true;
+                localStorage.setItem('osde_users', JSON.stringify(this.users));
+                this.renderPendientes();
+            },
+
+            saveData() {
+                const txt = document.getElementById('smart_in').value;
+                if(!txt) return alert("Escribí el detalle");
+                const reg = { u: this.current.m, f: new Date().toLocaleDateString(), d: txt, t: document.getElementById('tk_in').value, p: document.getElementById('tipo_in').value };
+                this.data.push(reg);
+                localStorage.setItem('osde_data_v29', JSON.stringify(this.data));
+                document.getElementById('smart_in').value = "";
+                this.renderHistorial();
+                alert("¡Carga guardada!");
+            },
+
+            renderHistorial() {
+                const mis = this.data.filter(d => d.u === this.current.m).reverse();
+                let html = "<table><thead><tr><th>Detalle</th><th>Tks</th><th>Tipo</th></tr></thead><tbody>";
+                mis.forEach(d => {
+                    html += `<tr><td>${d.d}</td><td>${d.t}</td><td><span class="tag tag-${d.p}">${d.p}%</span></td></tr>`;
+                });
+                document.getElementById('historial_html').innerHTML = html + "</tbody></table>";
+            }
+        };
+    </script>
+</body>
+</html>
