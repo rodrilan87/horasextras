@@ -3,178 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA GESTIÓN OSDE v35.0 - FULL</title>
+    <title>SISTEMA OSDE - CONTROL TOTAL</title>
     <style>
-        /* --- ESTILOS TOTALES --- */
+        /* --- ESTILOS DE MARCA Y UI --- */
         :root { 
             --navy: #003057; --sky: #0076BE; --orange: #E87722; 
             --green: #27ae60; --red: #dc3545; --gray: #f4f4f4; 
         }
-
         body { font-family: 'Segoe UI', sans-serif; background: #dfe4ea; margin: 0; padding: 10px; }
-        .container { max-width: 1000px; margin: auto; }
-        
-        .card { 
-            background: white; border-radius: 12px; padding: 25px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; 
-            border-top: 8px solid var(--navy); 
-        }
+        .container { max-width: 950px; margin: auto; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 8px solid var(--navy); }
 
-        /* Semáforo */
+        /* Semáforo de Horas */
         .semaforo-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin: 15px 0; }
-        .bar-bg { background: #eee; height: 18px; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid #ccc; }
-        .bar-fill { height: 100%; transition: 1s ease; width: 0%; }
-        .verde { background: var(--green); }
-        .naranja { background: var(--orange); }
-        .rojo { background: var(--red); }
+        .bar-bg { background: #eee; height: 16px; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .bar-fill { height: 100%; transition: 1s ease; width: 0%; background: var(--green); }
 
-        /* Colores Solicitados en Imágenes */
-        .box-rosa { border: 2px solid #ff00ff44; padding: 15px; border-radius: 10px; background: #fffaff; }
-        .box-verde { border: 2px solid #00ff0044; padding: 15px; border-radius: 10px; background: #fafffa; }
+        /* CAJAS DE COLORES SOLICITADAS */
+        .box-rosa { border: 2px solid #ff00ff66; padding: 15px; border-radius: 10px; background: #fffaff; }
+        .box-verde { border: 2px solid #00ff0066; padding: 15px; border-radius: 10px; background: #fafffa; }
         .box-naranja { border: 2px solid var(--orange); padding: 15px; border-radius: 10px; }
 
-        /* Tablas y Etiquetas */
-        .mes-label { background: var(--navy); color: white; padding: 10px 15px; border-radius: 5px; margin-top: 25px; font-weight: bold; display: flex; justify-content: space-between; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 13px; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; color: var(--navy); }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        
-        /* Tabs */
+        /* Tablas y Navegación */
         .tab-nav { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
         .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; }
         .tab-btn.active { color: var(--sky); border-bottom: 4px solid var(--sky); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
 
+        /* Inputs y Botones */
         .oculto { display: none !important; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; width: 100%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        .btn { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; width: 100%; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="auth-section" class="card" style="max-width: 400px; margin: 50px auto;">
+    <div id="auth-section" class="card" style="max-width: 400px; margin: 60px auto;">
         <h2 style="text-align:center; color:var(--navy)">OSDE <span style="color:var(--sky)">PORTAL</span></h2>
-        
         <div id="login-form">
-            <input type="email" id="l_email" placeholder="usuario@osde.com.ar">
-            <input type="password" id="l_pass" placeholder="Contraseña">
-            <button class="btn" style="background:var(--navy)" onclick="app.login()">Entrar</button>
-            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; color:var(--sky); cursor:pointer; margin-top:15px;">Registrar nueva cuenta</p>
+            <input type="email" id="l_email" placeholder="usuario@osde.com.ar o rodri@gmx.com">
+            <input type="password" id="l_pass" placeholder="Contraseña" style="margin-top:10px;">
+            <button class="btn" style="background:var(--navy); margin-top:15px;" onclick="app.login()">Entrar</button>
+            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; color:var(--sky); cursor:pointer; margin-top:20px;">Registrar nueva cuenta</p>
         </div>
-
         <div id="reg-form" class="oculto">
             <input type="text" id="r_name" placeholder="Nombre completo">
-            <input type="email" id="r_email" placeholder="Email corporativo">
-            <input type="password" id="r_pass" placeholder="Contraseña">
-            <button class="btn" style="background:var(--green)" onclick="app.register()">Crear Cuenta</button>
-            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; cursor:pointer; margin-top:15px;">Volver al login</p>
+            <input type="email" id="r_email" placeholder="Email @osde.com.ar" style="margin-top:10px;">
+            <input type="password" id="r_pass" placeholder="Contraseña" style="margin-top:10px;">
+            <button class="btn" style="background:var(--green); margin-top:15px;" onclick="app.register()">Crear Cuenta</button>
+            <p onclick="app.toggleAuth()" style="text-align:center; font-size:12px; cursor:pointer; margin-top:20px;">Volver al login</p>
         </div>
     </div>
 
-    <div id="user-section" class="oculto">
+    <div id="main-section" class="oculto">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center">
-                <h2 id="u-saludo" style="margin:0"></h2>
-                <button class="btn" style="background:var(--red); width:auto; padding:5px 15px;" onclick="app.logout()">SALIR</button>
+                <h2 id="u-saludo" style="margin:0; color:var(--navy)"></h2>
+                <button class="btn" style="background:var(--red); width:auto; padding:8px 20px;" onclick="app.logout()">CERRAR SESIÓN</button>
             </div>
 
             <div class="semaforo-box">
-                <div style="display:flex; justify-content:space-between; font-size:14px;">
+                <div style="display:flex; justify-content:space-between">
                     <span>Estado mensual de Horas Extras:</span>
                     <b id="hs-txt">0 / 30hs</b>
                 </div>
                 <div class="bar-bg"><div id="hs-bar" class="bar-fill"></div></div>
             </div>
 
-            <h3>Nueva Jornada</h3>
-            <div class="grid">
-                <div>
-                    <label>Fecha:</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="date" id="c_fecha">
-                        <button class="btn" style="background:var(--sky); width:auto;" onclick="app.setToday()">HOY</button>
+            <div class="tab-nav" id="admin-tabs" class="oculto">
+                <button class="tab-btn active" onclick="app.tab(event, 'carga')">Cargar Horas</button>
+                <button class="tab-btn" onclick="app.tab(event, 'historial')">Mis Registros</button>
+                <button id="jefe-tab-btn" class="tab-btn oculto" onclick="app.tab(event, 'jefe')">Panel Jefe ★</button>
+            </div>
+
+            <div id="tab-carga" class="tab-content">
+                <h3>Nueva Jornada</h3>
+                <div class="grid">
+                    <div>
+                        <label>Fecha:</label>
+                        <div style="display:flex; gap:5px;">
+                            <input type="date" id="c_fecha">
+                            <button class="btn" style="background:var(--sky); width:auto; padding:5px 10px;" onclick="app.setToday()">HOY</button>
+                        </div>
+                    </div>
+                    <div class="box-rosa" style="grid-column: span 2; display:flex; gap:10px;">
+                        <div><label>Desde:</label><input type="time" id="c_desde"></div>
+                        <div><label>Hasta:</label><input type="time" id="c_hasta"></div>
+                        <div><label>Total Hs:</label><input type="number" id="c_hs" step="0.5" placeholder="Ej: 2.5"></div>
                     </div>
                 </div>
-                <div class="box-rosa" style="grid-column: span 2; display: flex; gap: 10px;">
-                    <div><label>Desde:</label><input type="time" id="c_desde"></div>
-                    <div><label>Hasta:</label><input type="time" id="c_hasta"></div>
-                    <div><label>Horas:</label><input type="number" id="c_hs" step="0.5" placeholder="Ej: 2.5"></div>
+
+                <div class="grid" style="margin-top:15px;">
+                    <div class="box-verde">
+                        <label>Compensación:</label>
+                        <select id="c_tipo"><option value="50">Al 50%</option><option value="100">Al 100%</option></select>
+                    </div>
+                    <div class="box-naranja" style="grid-column: span 2;">
+                        <label>Detalle de tarea / Ticket:</label>
+                        <input type="text" id="c_tk" placeholder="TK-0000 o descripción">
+                    </div>
                 </div>
-            </div>
 
-            <div class="grid" style="margin-top:15px;">
-                <div class="box-verde">
-                    <label>Compensación (%):</label>
-                    <select id="c_tipo"><option value="50">Al 50%</option><option value="100">Al 100%</option></select>
+                <div style="margin-top:15px;">
+                    <label>Sugerencias (Máx 50 palabras):</label>
+                    <textarea id="c_sug" rows="2" maxlength="250"></textarea>
                 </div>
-                <div class="box-naranja" style="grid-column: span 2;">
-                    <label>Detalle de tarea / TK:</label>
-                    <input type="text" id="c_tk" placeholder="TK-99999 o descripción breve">
+                <button class="btn" style="background:var(--orange); margin-top:20px; font-size:18px;" id="btn-save" onclick="app.save()">GUARDAR JORNADA</button>
+            </div>
+
+            <div id="tab-historial" class="tab-content oculto">
+                <div id="user-history-table"></div>
+            </div>
+
+            <div id="tab-jefe" class="tab-content oculto">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="app.subTab(event, 'auditoria')">Auditoría</button>
+                    <button class="tab-btn" onclick="app.subTab(event, 'usuarios')">Usuarios</button>
+                    <button class="tab-btn" onclick="app.subTab(event, 'cierres')">Cierres</button>
                 </div>
-            </div>
-
-            <div style="margin-top:15px;">
-                <label>Sugerencias / Observaciones (Máx 50 palabras):</label>
-                <textarea id="c_sugerencia" rows="2" maxlength="300"></textarea>
-            </div>
-
-            <button class="btn" style="background:var(--orange); margin-top:20px; font-size:18px;" id="btn-save" onclick="app.save()">GUARDAR JORNADA</button>
-
-            <h3 style="margin-top:40px;">Mi Historial</h3>
-            <div id="user-history"></div>
-        </div>
-    </div>
-
-    <div id="admin-section" class="oculto">
-        <div class="card" style="border-top-color: var(--orange);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; color:var(--orange)">PANEL DE CONTROL (JEFE)</h2>
-                <button class="btn" style="background:var(--red); width:auto; padding:5px 15px;" onclick="app.logout()">SALIR</button>
-            </div>
-
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="app.tab(event, 'auditoria')">Auditoría</button>
-                <button class="tab-btn" onclick="app.tab(event, 'usuarios')">Usuarios</button>
-                <button class="tab-btn" onclick="app.tab(event, 'cierres')">Calendario Cierres</button>
-            </div>
-
-            <div id="tab-auditoria" class="admin-content">
-                <input type="text" id="f-admin" placeholder="🔍 Buscar por nombre o ticket..." onkeyup="app.filterAdmin()">
-                <div id="admin-history"></div>
-            </div>
-
-            <div id="tab-usuarios" class="admin-content oculto">
-                <table>
-                    <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acción</th></tr></thead>
-                    <tbody id="u-body"></tbody>
-                </table>
-            </div>
-
-            <div id="tab-cierres" class="admin-content oculto">
-                <div class="grid" id="cierres-ui"></div>
-                <button class="btn" style="background:var(--navy); margin-top:20px;" onclick="app.saveCierres()">GUARDAR CALENDARIO</button>
+                <div id="sub-auditoria" class="sub-content">
+                    <input type="text" placeholder="🔍 Buscar por nombre..." onkeyup="app.filterTable(this.value)">
+                    <div id="admin-audit-table"></div>
+                </div>
+                <div id="sub-usuarios" class="sub-content oculto">
+                    <table id="user-list"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead><tbody id="user-tbody"></tbody></table>
+                </div>
+                <div id="sub-cierres" class="sub-content oculto">
+                    <div class="grid" id="cierres-grid"></div>
+                    <button class="btn" style="background:var(--navy); margin-top:20px;" onclick="app.saveCierres()">Actualizar Calendario</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    /* --- JAVASCRIPT TOTAL --- */
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzr-CIzhCmkhh-RX2HTk_xryfUFoHx6jQtngxP6xMtU2SBiaS6zQHlvcW-UCG75WmyA/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzxMWANRQxkue_jvpKFdzmm3K6Q6fyvFtAbtDii55FA-quPjBhgCwp9NGjButXlh2-x/exec"; // REEMPLAZAR POR TU URL
     const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
     const app = {
         user: null, db: [], cierres: Array(12).fill(24),
 
-        // LOGIN CON BYPASS GMX
+        // --- LOGIN CORREGIDO PARA GMX ---
         async login() {
             const m = document.getElementById('l_email').value.toLowerCase().trim();
             const p = document.getElementById('l_pass').value;
 
-            // Usuario admin rodri@gmx.com habilitado
-            if(m === "rodri@gmx.com" && p === "1234") {
-                this.user = { n: "Rodrigo (Admin)", m, rol: "jefe" };
+            // Bypass Rodrigo
+            if (m === "rodri@gmx.com" && p === "1234") {
+                this.user = { n: "Rodrigo", m: m, rol: "jefe" };
                 return this.iniciar();
             }
 
@@ -182,108 +163,82 @@
                 const res = await fetch(WEB_APP_URL);
                 this.db = await res.json();
                 const u = this.db.find(r => r[0]==="USER" && r[2]===m && String(r[3])===p);
-                if(u) {
+                if (u) {
                     this.user = { n: u[1], m: u[2], rol: u[4] };
                     this.iniciar();
-                } else alert("Credenciales incorrectas.");
-            } catch(e) { alert("Error de conexión."); }
+                } else alert("Usuario o clave incorrectos.");
+            } catch(e) { alert("Error de conexión. Verificá la URL del Script."); }
         },
 
-        // REGISTRO @OSDE.COM.AR
         async register() {
             const n = document.getElementById('r_name').value;
             const m = document.getElementById('r_email').value.toLowerCase().trim();
             const p = document.getElementById('r_pass').value;
-
-            if(!m.endsWith("@osde.com.ar") && m !== "rodri@gmx.com") {
-                return alert("Solo se permiten correos @osde.com.ar");
-            }
-
+            if (!m.endsWith("@osde.com.ar")) return alert("Solo emails @osde.com.ar");
             await fetch(WEB_APP_URL, {method:'POST', mode:'no-cors', body:JSON.stringify({type:"registro", n, m, p})});
-            alert("Registro exitoso.");
-            this.toggleAuth();
-        },
-
-        // CARGA CON LÓGICA DE 30HS Y EXCEDENTES
-        async save() {
-            const f = document.getElementById('c_fecha').value;
-            const h = parseFloat(document.getElementById('c_hs').value);
-            const tk = document.getElementById('c_tk').value;
-            const t = document.getElementById('c_tipo').value;
-            
-            // Nuevos campos solicitados
-            const d = document.getElementById('c_desde').value;
-            const ht = document.getElementById('c_hasta').value;
-            const sug = document.getElementById('c_sugerencia').value;
-
-            if(!f || isNaN(h) || !tk) return alert("Faltan campos obligatorios.");
-
-            const fObj = new Date(f + "T12:00:00");
-            const dCierre = this.cierres[fObj.getMonth()];
-            let mesPertenencia = (fObj.getDate() > dCierre) ? (fObj.getMonth() + 1) : fObj.getMonth();
-            if(mesPertenencia > 11) mesPertenencia = 0;
-
-            const totalCargado = this.db.filter(r => r[0]==="DATA" && r[2]===this.user.m && r[3]===mesPertenencia)
-                                         .reduce((s,r) => s + parseFloat(r[6]), 0);
-            
-            let hHoy = h, hSobrante = 0;
-            if(totalCargado + h > 30) {
-                hHoy = 30 - totalCargado;
-                hSobrante = h - hHoy;
-                if(hHoy < 0) hHoy = 0;
-                alert(`Tope mensual alcanzado. Se derivan ${hSobrante}hs al mes siguiente.`);
-            }
-
-            document.getElementById('btn-save').innerText = "GUARDANDO...";
-            const basePayload = { n:this.user.n, u:this.user.m, tk:tk, p:t, fecha:f, desde:d, hasta:ht, sugerencia:sug };
-
-            if(hHoy > 0) await fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({type:"carga", ...basePayload, h:hHoy, mes:mesPertenencia})});
-            if(hSobrante > 0) {
-                let mSig = mesPertenencia + 1; if(mSig > 11) mSig = 0;
-                await fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({type:"carga", ...basePayload, tk:tk+" (EXC)", h:hSobrante, mes:mSig})});
-            }
-            location.reload();
+            alert("Cuenta creada."); this.toggleAuth();
         },
 
         async iniciar() {
-            if(this.db.length === 0) {
+            if (this.db.length === 0) {
                 const res = await fetch(WEB_APP_URL);
                 this.db = await res.json();
             }
             this.db.filter(r => r[0]==="CIERRE").forEach(c => this.cierres[c[1]] = c[2]);
             document.getElementById('auth-section').classList.add('oculto');
-            if(this.user.rol === "jefe") {
-                document.getElementById('admin-section').classList.remove('oculto');
-                this.renderAdmin();
-            } else {
-                document.getElementById('user-section').classList.remove('oculto');
-                document.getElementById('u-saludo').innerText = "Hola, " + this.user.n;
-                this.renderUser();
+            document.getElementById('main-section').classList.remove('oculto');
+            document.getElementById('u-saludo').innerText = "Hola, " + this.user.n;
+            
+            if (this.user.rol === "jefe") {
+                document.getElementById('jefe-tab-btn').classList.remove('oculto');
             }
+            this.render();
         },
 
-        renderUser() {
-            const m = new Date().getMonth();
-            const tot = this.db.filter(r => r[0]==="DATA" && r[2]===this.user.m && r[3]===m).reduce((s,r)=>s+parseFloat(r[6]),0);
-            document.getElementById('hs-txt').innerText = `${tot} / 30hs`;
-            const bar = document.getElementById('hs-bar');
-            bar.style.width = Math.min((tot/30*100), 100) + "%";
-            bar.className = "bar-fill " + (tot < 20 ? 'verde' : tot < 30 ? 'naranja' : 'rojo');
-            this.drawTable('user-history', this.user.m);
+        async save() {
+            const f = document.getElementById('c_fecha').value;
+            const h = parseFloat(document.getElementById('c_hs').value);
+            const tk = document.getElementById('c_tk').value;
+            if (!f || isNaN(h) || !tk) return alert("Completa los campos obligatorios.");
+
+            document.getElementById('btn-save').innerText = "GUARDANDO...";
+            const payload = {
+                type: "carga", n: this.user.n, u: this.user.m, fecha: f,
+                desde: document.getElementById('c_desde').value,
+                hasta: document.getElementById('c_hasta').value,
+                h: h, p: document.getElementById('c_tipo').value,
+                tk: tk, sugerencia: document.getElementById('c_sug').value,
+                mes: new Date().getMonth()
+            };
+
+            await fetch(WEB_APP_URL, {method:'POST', mode:'no-cors', body:JSON.stringify(payload)});
+            location.reload();
         },
 
-        renderAdmin() {
-            this.drawTable('admin-history', null);
-            const tbody = document.getElementById('u-body'); tbody.innerHTML = "";
-            this.db.filter(r => r[0]==="USER").forEach(u => {
-                tbody.innerHTML += `<tr><td>${u[1]}</td><td>${u[2]}</td><td>${u[4]}</td>
-                <td><button class="btn" style="background:var(--navy); width:auto; font-size:10px;" onclick="app.setRol('${u[2]}','${u[4]=='jefe'?'usuario':'jefe'}')">ROL</button>
-                <button class="btn" style="background:var(--red); width:auto; font-size:10px;" onclick="app.delUser('${u[2]}')">X</button></td></tr>`;
-            });
-            const gui = document.getElementById('cierres-ui'); gui.innerHTML = "";
-            this.cierres.forEach((d, i) => {
-                gui.innerHTML += `<div style="background:#f8f9fa; padding:10px; border-radius:5px;"><label>${MESES[i]}</label><input type="number" class="c-val" value="${d}"></div>`;
-            });
+        render() {
+            const mesAct = new Date().getMonth();
+            const logs = this.db.filter(r => r[0]==="DATA" && r[2]===this.user.m && r[3] == mesAct);
+            const total = logs.reduce((s, r) => s + parseFloat(r[6]), 0);
+            document.getElementById('hs-txt').innerText = `${total} / 30hs`;
+            document.getElementById('hs-bar').style.width = Math.min((total/30*100), 100) + "%";
+            
+            // Historial Propio
+            this.drawTable('user-history-table', this.user.m);
+            
+            // Panel Jefe
+            if (this.user.rol === "jefe") {
+                this.drawTable('admin-audit-table', null);
+                const tbody = document.getElementById('user-tbody'); tbody.innerHTML = "";
+                this.db.filter(r => r[0]==="USER").forEach(u => {
+                    tbody.innerHTML += `<tr><td>${u[1]}</td><td>${u[2]}</td><td>${u[4]}</td><td>
+                        <button onclick="app.setRol('${u[2]}','${u[4]=='jefe'?'usuario':'jefe'}')">Cambiar Rol</button>
+                    </td></tr>`;
+                });
+                const grid = document.getElementById('cierres-grid'); grid.innerHTML = "";
+                this.cierres.forEach((d, i) => {
+                    grid.innerHTML += `<div><label>${MESES[i]}</label><input type="number" class="c-val" value="${d}"></div>`;
+                });
+            }
         },
 
         drawTable(divId, email) {
@@ -291,36 +246,27 @@
             const logs = this.db.filter(r => r[0]==="DATA" && (email ? r[2]===email : true));
             MESES.forEach((m, i) => {
                 const fil = logs.filter(r => r[3] == i);
-                if(fil.length > 0) {
-                    div.innerHTML += `<div class="mes-label"><span>${m}</span></div>`;
-                    let h = `<table><thead><tr>${!email?'<th>Nombre</th>':''}<th>Fecha</th><th>Tarea/TK</th><th>Hs</th><th>Sugerencia</th></tr></thead><tbody>`;
-                    fil.forEach(r => { h += `<tr>${!email?`<td>${r[1]}</td>`:''}<td>${new Date(r[4]).toLocaleDateString()}</td><td>${r[5]}</td><td>${r[6]}hs (${r[7]}%)</td><td>${r[10] || ''}</td></tr>`; });
+                if (fil.length > 0) {
+                    let h = `<h3>Horas de ${m}</h3><table><thead><tr>${!email?'<th>Nombre</th>':''}<th>Fecha</th><th>Tarea</th><th>Hs</th><th>Desde/Hasta</th></tr></thead><tbody>`;
+                    fil.forEach(r => { h += `<tr>${!email?`<td>${r[1]}</td>`:''}<td>${r[4]}</td><td>${r[5]}</td><td>${r[6]} (${r[7]}%)</td><td>${r[8]}-${r[9]}</td></tr>`; });
                     div.innerHTML += h + "</tbody></table>";
                 }
             });
         },
 
-        // FUNCIONES ADMIN
-        async setRol(m, newRol) { await fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({type:"rol", m, newRol})}); location.reload(); },
-        async delUser(m) { if(confirm("¿Borrar usuario?")) { await fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({type:"delete_user", m})}); location.reload(); }},
-        async saveCierres() { 
-            const inputs = document.querySelectorAll('.c-val'); 
-            for(let i=0; i<inputs.length; i++){ await fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({type:"cierre", mes:i, dia:inputs[i].value})}); } 
-            alert("Cierres guardados."); location.reload(); 
-        },
-
-        setToday() { document.getElementById('c_fecha').valueAsDate = new Date(); },
+        // --- HELPERS ---
         toggleAuth() { document.getElementById('login-form').classList.toggle('oculto'); document.getElementById('reg-form').classList.toggle('oculto'); },
         logout() { localStorage.clear(); location.reload(); },
+        setToday() { document.getElementById('c_fecha').valueAsDate = new Date(); },
         tab(e, id) {
-            document.querySelectorAll('.admin-content').forEach(c => c.classList.add('oculto'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('oculto'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + id).classList.remove('oculto');
             e.currentTarget.classList.add('active');
         },
-        filterAdmin() {
-            const val = document.getElementById('f-admin').value.toLowerCase();
-            document.querySelectorAll('#admin-history tr').forEach(tr => tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none");
+        subTab(e, id) {
+            document.querySelectorAll('.sub-content').forEach(c => c.classList.add('oculto'));
+            document.getElementById('sub-' + id).classList.remove('oculto');
         }
     };
 </script>
