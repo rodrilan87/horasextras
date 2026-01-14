@@ -15,18 +15,9 @@ input, select, textarea, button {
   margin: 6px 0;
   padding: 6px;
 }
-button {
-  cursor: pointer;
-}
-.hidden {
-  display: none;
-}
-.ok {
-  color: green;
-}
-.err {
-  color: red;
-}
+.hidden { display: none; }
+.ok { color: green; }
+.err { color: red; }
 </style>
 </head>
 
@@ -79,11 +70,12 @@ button {
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxV3SL1d46HCmtdBnOKxa03Rk44SbZGlAkmvWImkqq-52wtTv7tvbC3_HIM7yauvGj9ZA/exec";
+const API = "https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
+
 let EMAIL = "";
 
 function login() {
-  fetch(`${API}?action=login&email=${email.value}&clave=${clave.value}`)
+  fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
     .then(d => {
       if (!d.ok) {
@@ -98,7 +90,7 @@ function login() {
 }
 
 function registrar() {
-  fetch(`${API}?action=register&email=${email.value}&clave=${clave.value}`)
+  fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
     .then(r => r.json())
     .then(d => {
       msg.innerHTML = d.ok
@@ -119,21 +111,21 @@ function guardar() {
 
   fetch(
     `${API}?action=cargarHoras` +
-    `&email=${EMAIL}` +
-    `&fecha=${fecha.value}` +
-    `&desde=${desde.value}` +
-    `&hasta=${hasta.value}` +
-    `&horas=${horas}` +
-    `&porcentaje=${porcentaje.value}` +
-    `&sugerencia=${sugerencia.value}` +
-    `&tk=${tk.value}`
+    `&email=${encodeURIComponent(EMAIL)}` +
+    `&fecha=${encodeURIComponent(fecha.value)}` +
+    `&desde=${encodeURIComponent(desde.value)}` +
+    `&hasta=${encodeURIComponent(hasta.value)}` +
+    `&horas=${encodeURIComponent(horas)}` +
+    `&porcentaje=${encodeURIComponent(porcentaje.value)}` +
+    `&sugerencia=${encodeURIComponent(sugerencia.value)}` +
+    `&tk=${encodeURIComponent(tk.value)}`
   )
   .then(r => r.json())
   .then(() => listar());
 }
 
 function listar() {
-  fetch(`${API}?action=listar&email=${EMAIL}`)
+  fetch(`${API}?action=listar&email=${encodeURIComponent(EMAIL)}`)
     .then(r => r.json())
     .then(data => {
       let html = `
