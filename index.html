@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Horas Extras</title>
+
+<style>
+:root{
+  --azul:#0a1a2f;
+  --azul-claro:#eef3fb;
+  --verde:#c7f5cf;
+  --amarillo:#ffe9a6;
+  --rojo:#ffb3b3;
+}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:var(--azul-claro)}
+
+#loginBox{min-height:100vh;display:flex;justify-content:center;align-items:center}
+.login-card{
+  background:#fff;width:380px;padding:30px;border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);text-align:center
+}
+.login-card input{
+  width:100%;padding:12px;margin-bottom:12px;border-radius:8px;border:1px solid #ccc
+}
+.login-card button{
+  width:100%;padding:12px;background:var(--azul);color:#fff;border:none;border-radius:8px;cursor:pointer
+}
+.login-card .link{margin-top:10px;font-size:14px}
+.login-card .link span{color:#1e5eff;cursor:pointer}
+#error{color:red;margin-top:10px;min-height:18px}
+
+#app{display:none;padding:25px}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:20px}
+
+.form-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.form-row input,.form-row select{padding:10px;border-radius:8px;border:1px solid #ccc}
+.form-row button{background:var(--azul);color:#fff;border:none;border-radius:8px;cursor:pointer}
+
+textarea{
+  width:100%;
+  min-height:92px;max-height:160px;resize:vertical;
+  margin-top:10px;padding:12px;border-radius:10px;border:1px solid #ccc
+}
+
+/* Barra disponibilidad */
+.barra-wrap{margin-top:14px;padding:12px;border:1px solid #e6e6e6;border-radius:12px;background:#fff}
+.barra-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-weight:bold}
+.barra-sub{font-size:12px;color:#444;margin-bottom:8px}
+.barra{width:100%;height:14px;background:#e9eef7;border-radius:999px;overflow:hidden}
+.barra>div{height:100%;width:0%;transition:width .25s ease}
+.barra.verde>div{background:#58c26b}
+.barra.amarillo>div{background:#e7b700}
+.barra.rojo>div{background:#e85a5a}
+
+.topbar{display:flex;justify-content:flex-end;margin-bottom:15px}
+.topbar button{background:#ddd;border:none;padding:8px 14px;border-radius:8px;cursor:pointer}
+
+.mes{
+  background:var(--verde);
+  padding:10px;border-radius:10px;font-weight:bold;text-align:center;
+  margin-top:25px;text-transform:lowercase
+}
+
+.registro{
+  background:#ecfff0;padding:12px;border-radius:10px;margin-top:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px
+}
+.registro .txt{flex:1;min-width:0}
+.registro small{color:#5a5a5a}
+.registro button{border:none;background:transparent;color:red;font-size:18px;cursor:pointer;line-height:1}
+
+.registro.zero{opacity:.7}
+.registro.zero .txt{color:#333}
+.registro.zero small{color:#6b6b6b;font-style:italic}
+
+.resumen{margin-top:8px;font-weight:bold;text-align:right}
+.resumen small{display:block;font-weight:normal;color:#444;margin-top:4px}
+</style>
+</head>
+
+<body>
+
+<div id="loginBox">
+  <div class="login-card">
+    <h2>Bienvenido</h2>
+    <p>Ingresá para gestionar tus horas extras</p>
+    <input id="email" placeholder="email" autocomplete="username">
+    <input id="clave" type="password" placeholder="clave" autocomplete="current-password">
+    <button onclick="doLogin()">Iniciar sesión</button>
+    <div class="link">¿No tenés cuenta? <span onclick="doRegister()">Registrate aquí</span></div>
+    <div id="error"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <button onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="card">
+    <div class="form-row">
+      <input id="usuario" disabled>
+      <input type="date" id="fecha">
+      <input type="time" id="desde">
+      <input type="time" id="hasta">
+      <input id="tk" placeholder="TK">
+      <select id="porcentaje">
+        <option value="50%">50%</option>
+        <option value="100%">100%</option>
+      </select>
+      <button onclick="guardar()">Guardar</button>
+    </div>
+
+    <textarea id="sugerencia" maxlength="300" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
+
+    <div class="barra-wrap">
+      <div class="barra-top">
+        <div id="barraTitulo">Disponibilidad del mes</div>
+        <div id="barraNumero">0 / 30 hs</div>
+      </div>
+      <div class="barra-sub" id="barraSub">Te quedan 30 hs para cargar este mes.</div>
+      <div class="barra verde" id="barra"><div id="barraFill"></div></div>
+    </div>
+  </div>
+
+  <div class="card" id="listado"></div>
+</div>
+
+<script>
+/* === CONFIG === */
+const API="https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
+const TOPE_MENSUAL = 30;
+
+/* === HELPERS === */
+function apiUrl(params){
+  const qs = new URLSearchParams(params);
+  qs.set("_ts", Date.now()); // cache-buster
+  return `${API}?${qs.toString()}`;
+}
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function fFecha(v){ return new Date(v).toLocaleDateString("es-AR"); }
+function fHora(v){ return new Date(v).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}); }
+function esMesAnioDeFecha(d, ym){ return (d.getFullYear()*100 + d.getMonth()) === ym; }
+
+const MONTH_ES = {
+  january:"enero", february:"febrero", march:"marzo", april:"abril", may:"mayo", june:"junio",
+  july:"julio", august:"agosto", september:"septiembre", october:"octubre", november:"noviembre", december:"diciembre"
+};
+
+function mesEnEspanol(mesKey, anyRow){
+  // Preferimos fecha real si existe (evita meses en inglés)
+  if(anyRow && anyRow[3]){
+    const d = new Date(anyRow[3]);
+    if(!isNaN(d)) return d.toLocaleString("es-AR",{month:"long",year:"numeric"});
+  }
+  const parts = String(mesKey||"").trim().split(/\s+/);
+  if(parts.length>=2){
+    const m = (parts[0]||"").toLowerCase();
+    const y = parts[1];
+    if(MONTH_ES[m]) return MONTH_ES[m].replace(/^./,c=>c.toUpperCase()) + " " + y;
+  }
+  return mesKey || "Sin mes";
+}
+
+function fmtPorcentaje(v){
+  let s = (v ?? "").toString().trim();
+  if(!s) return "-";
+  if(/^\d+(\.\d+)?$/.test(s)) return s + "%";
+  if(/^\d+(\.\d+)?%$/.test(s)) return s;
+  return s;
+}
+
+function getDeleted(){ return JSON.parse(localStorage.getItem("deletedRows")||"[]"); }
+function toggleDeleted(id){
+  const d=getDeleted();
+  const idx=d.indexOf(id);
+  if(idx>=0) d.splice(idx,1);
+  else d.push(id);
+  localStorage.setItem("deletedRows",JSON.stringify(d));
+  cargar();
+}
+
+function validarSugerencia(texto){
+  const t=(texto||"").trim();
+  if(!t) return true;
+  const palabras = t.split(/\s+/).filter(Boolean);
+  return palabras.length <= 50;
+}
+
+/* === LOGIN === */
+async function doLogin(){
+  error.textContent="";
+  const em=(email.value||"").trim();
+  const cl=(clave.value||"").trim();
+  if(!em||!cl){ error.textContent="Completá email y clave"; return; }
+
+  try{
+    const r=await fetch(apiUrl({action:"login",email:em,clave:cl}));
+    const d=await r.json();
+    if(!d.ok){ error.textContent=d.error||"Credenciales inválidas"; return; }
+
+    usuario.value=d.email;
+    loginBox.style.display="none";
+    app.style.display="block";
+
+    const hoy=new Date();
+    hoy.setHours(0,0,0,0);
+    fecha.value=hoy.toISOString().slice(0,10);
+    desde.value="09:00";
+    hasta.value="10:00";
+    porcentaje.value="50%";
+    tk.value="";
+    sugerencia.value="";
+
+    await cargar();
+  }catch(e){
+    error.textContent="No pude conectar con el servidor (probá Ctrl+Shift+R).";
+  }
+}
+
+async function doRegister(){
+  error.textContent="";
+  const em=(email.value||"").trim();
+  const cl=(clave.value||"").trim();
+  if(!em||!cl){ error.textContent="Completá email y clave"; return; }
+
+  try{
+    const r=await fetch(apiUrl({action:"register",email:em,clave:cl}));
+    const d=await r.json();
+    error.textContent=d.ok?"Usuario registrado ✅ Ahora iniciá sesión.":(d.error||"No se pudo registrar");
+  }catch(e){
+    error.textContent="No pude registrar (probá Ctrl+Shift+R).";
+  }
+}
+
+function logout(){
+  app.style.display="none";
+  loginBox.style.display="flex";
+  error.textContent="";
+}
+
+/* === GUARDAR === */
+async function guardar(){
+  const em=(usuario.value||"").trim();
+  if(!em){ alert("Sesión inválida. Volvé a iniciar sesión."); logout(); return; }
+
+  if(!fecha.value){ alert("Elegí una fecha"); return; }
+  if(!desde.value||!hasta.value){ alert("Completá desde y hasta"); return; }
+
+  // No futuro
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const f=new Date(fecha.value+"T00:00:00");
+  if(f.getTime()>hoy.getTime()){ alert("No se pueden cargar horas a futuro."); return; }
+
+  if(!validarSugerencia(sugerencia.value)){
+    alert("La sugerencia debe tener como máximo 50 palabras.");
+    return;
+  }
+
+  // horas (soporta cruce medianoche)
+  const d1=new Date(`1970-01-01T${desde.value}:00`);
+  let d2=new Date(`1970-01-01T${hasta.value}:00`);
+  if(d2<=d1) d2=new Date(d2.getTime()+24*3600*1000);
+  const h=(d2-d1)/3600000;
+  if(h<=0||!isFinite(h)){ alert("Horario inválido"); return; }
+
+  try{
+    await fetch(apiUrl({
+      action:"cargarHoras",
+      email:em,
+      fecha:fecha.value,
+      desde:desde.value,
+      hasta:hasta.value,
+      horas:h,
+      porcentaje:porcentaje.value,
+      sugerencia:(sugerencia.value||""),
+      tk:(tk.value||"")
+    }));
+    tk.value="";
+    sugerencia.value="";
+    await cargar();
+  }catch(e){
+    alert("No pude guardar. Probá recargar (Ctrl+Shift+R).");
+  }
+}
+
+/* === BARRA === */
+function pintarBarra(totalMes, mesLabel){
+  const total=Math.max(0,Number(totalMes)||0);
+  const restante=Math.max(0,TOPE_MENSUAL-total);
+  const pct=Math.min(100,(total/TOPE_MENSUAL)*100);
+
+  barraTitulo.textContent=`Disponibilidad — ${mesLabel.toLowerCase()}`;
+  barraNumero.textContent=`${total} / ${TOPE_MENSUAL} hs`;
+  barraSub.textContent=`Te quedan ${restante} hs para cargar este mes.`;
+
+  const bar=document.getElementById("barra");
+  bar.classList.remove("verde","amarillo","rojo");
+  if(total<=15) bar.classList.add("verde");
+  else if(total<=25) bar.classList.add("amarillo");
+  else bar.classList.add("rojo");
+
+  barraFill.style.width=pct.toFixed(1)+"%";
+}
+
+/* === LISTADO === */
+function normalizarFilas(data){
+  // Algunos Apps Script devuelven directamente array, otros {rows:[...]}.
+  if(Array.isArray(data)) return data;
+  if(data && Array.isArray(data.rows)) return data.rows;
+  if(data && Array.isArray(data.data)) return data.data;
+  return [];
+}
+
+function esFilaCabecera(row){
+  return row && row[0] && String(row[0]).toUpperCase() === "TIPO";
+}
+function esFilaUsuario(row){
+  return row && row[0] && String(row[0]).toUpperCase() === "USER";
+}
+function tieneFecha(row){
+  return row && row[3] && !isNaN(new Date(row[3]));
+}
+
+async function cargar(){
+  const em=(usuario.value||"").trim();
+  if(!em) return;
+
+  const r=await fetch(apiUrl({action:"listar",email:em}));
+  const raw=await r.json();
+  const rows=normalizarFilas(raw);
+
+  listado.innerHTML="";
+  const deleted=getDeleted();
+
+  const refDate = fecha.value ? new Date(fecha.value+"T00:00:00") : new Date();
+  const mesRefLabel = refDate.toLocaleString("es-AR",{month:"long",year:"numeric"});
+  const ymRef = refDate.getFullYear()*100 + refDate.getMonth();
+
+  // Filtrar filas basura (cabecera/usuario)
+  const data = rows
+    .filter(row => Array.isArray(row))
+    .filter(row => !esFilaCabecera(row))
+    .filter(row => !esFilaUsuario(row))
+    .filter(row => tieneFecha(row));
+
+  // Agrupar por mes (col J índice 9)
+  const porMes={};
+  data.forEach((row,idxEnData)=>{
+    // idx REAL dentro del array original que usa tu "deletedRows"
+    // Para mantener compatibilidad con tu borrado local, usamos el índice sobre rows completos.
+    // Buscamos el índice original:
+    const id = rows.indexOf(row);
+    const m = row[9] || "Sin mes";
+    if(!porMes[m]) porMes[m]=[];
+    porMes[m].push({row,id});
+  });
+
+  // Ordenar meses por fecha real
+  const meses=Object.keys(porMes).sort((a,b)=>{
+    const ra=porMes[a]?.[0]?.row;
+    const rb=porMes[b]?.[0]?.row;
+    const da=ra&&ra[3]?new Date(ra[3]):new Date(a+" 01");
+    const db=rb&&rb[3]?new Date(rb[3]):new Date(b+" 01");
+    if(!isNaN(da)&&!isNaN(db)) return db-da;
+    return String(a).localeCompare(String(b));
+  });
+
+  // Total del mes activo (solo no-borrados)
+  let totalMesRef=0;
+
+  // Recorremos meses y pintamos
+  meses.forEach(m=>{
+    let th=0;          // horas
+    let tkCount=0;     // cantidad de registros con TK
+    let c50=0,c100=0;  // cantidad de registros por %
+    let h50=0,h100=0;  // horas por %
+
+    // sumas por mes (ignorando borrados)
+    porMes[m].forEach(o=>{
+      const row=o.row;
+      const id=o.id;
+      const isZero = deleted.includes(id);
+
+      const horas = Number(row[6]) || 0;
+      const tkVal = (row[10] ?? "").toString().trim();     // K
+      const porcRaw = (row[7] ?? "").toString().trim();    // H
+      const porc = fmtPorcentaje(porcRaw);
+
+      const fechaRow = new Date(row[3]);
+
+      // total mes activo para la barra (solo si NO borrado)
+      if(!isZero && !isNaN(fechaRow) && esMesAnioDeFecha(fechaRow, ymRef)){
+        totalMesRef += horas;
+      }
+
+      // totales por mes (solo si NO borrado)
+      if(!isZero){
+        th += horas;
+        if(tkVal) tkCount += 1;
+
+        if(porc.startsWith("50")){ c50++; h50 += horas; }
+        else if(porc.startsWith("100")){ c100++; h100 += horas; }
+      }
+    });
+
+    // Título mes en español
+    const tituloMesES = mesEnEspanol(m, porMes[m][0]?.row).toLowerCase();
+    listado.innerHTML += `<div class="mes">${escapeHtml(tituloMesES)}</div>`;
+
+    // registros
+    porMes[m].forEach(o=>{
+      const row=o.row;
+      const id=o.id;
+      const isZero = deleted.includes(id);
+
+      const sug=(row[8] ?? "").toString().trim();          // I
+      const tkVal=(row[10] ?? "").toString().trim();       // K
+      const porc=fmtPorcentaje((row[7] ?? "").toString()); // H
+
+      const horasVis = isZero ? 0 : (Number(row[6])||0);
+
+      listado.innerHTML += `
+        <div class="registro ${isZero ? "zero":""}">
+          <div class="txt">
+            <b>${fFecha(row[3])}</b> · ${fHora(row[4])} a ${fHora(row[5])}
+            · ${horasVis} hs · ${porc} · TK ${escapeHtml(tkVal || "-")}
+            ${sug ? `<br><small>${escapeHtml(sug)}</small>` : ""}
+            ${isZero ? `<br><small>Este registro se puso en 0 y no se suma a tus horas cargadas</small>` : ""}
+          </div>
+          <button title="${isZero ? "Restaurar registro" : "Poner en 0 (no suma)"}" onclick="toggleDeleted(${id})">✖</button>
+        </div>`;
+    });
+
+    // resumen del mes (incluye tu “sugerencia pro”)
+    listado.innerHTML += `
+      <div class="resumen">
+        Total mes: ${th} hs · ${tkCount} TK
+        <small>50%: ${c50} registros (${h50} hs) · 100%: ${c100} registros (${h100} hs)</small>
+      </div>`;
+  });
+
+  pintarBarra(totalMesRef, mesRefLabel);
+}
+
+/* recalcular al cambiar fecha (para barra del mes activo) */
+document.addEventListener("DOMContentLoaded", ()=>{
+  fecha.addEventListener("change", ()=>{
+    if(app.style.display==="block") cargar();
+  });
+});
+</script>
+
+</body>
+</html>
