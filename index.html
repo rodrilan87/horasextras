@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Horas Extras</title>
+
+<style>
+:root{
+  --verde:#c7f5cf;
+  --amarillo:#ffe9a6;
+  --rojo:#ffb3b3;
+  --azul:#0a1a2f;
+  --bg:#eef3fb;
+}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:var(--bg)}
+
+#loginBox{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.login{
+  background:#fff;
+  padding:30px;
+  width:360px;
+  border-radius:14px;
+  text-align:center;
+}
+.login input,.login button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+}
+.login button{
+  background:var(--azul);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+}
+
+#app{display:none;padding:25px}
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+}
+
+.form{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+}
+.form input,.form select,.form button{
+  padding:8px;
+}
+
+.semaforo{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-top:15px;
+}
+.semaforo div{
+  padding:12px;
+  text-align:center;
+  border-radius:10px;
+  opacity:.3;
+  font-weight:bold;
+}
+.verde{background:var(--verde)}
+.amarillo{background:var(--amarillo)}
+.rojo{background:var(--rojo)}
+
+.mes{
+  margin-top:20px;
+  background:var(--verde);
+  padding:8px;
+  text-align:center;
+  border-radius:8px;
+  font-weight:bold;
+}
+.registro{
+  background:#ecfff0;
+  margin-top:8px;
+  padding:10px;
+  border-radius:8px;
+  display:flex;
+  justify-content:space-between;
+}
+.registro small{color:#555}
+.anulado{
+  opacity:.6;
+  font-style:italic;
+}
+button.x{
+  background:none;
+  border:none;
+  color:red;
+  font-size:18px;
+  cursor:pointer;
+}
+.resumen{
+  text-align:right;
+  font-weight:bold;
+  margin-top:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginBox">
+  <div class="login">
+    <h3>Bienvenido</h3>
+    <input id="email" placeholder="email">
+    <input id="clave" type="password" placeholder="clave">
+    <button onclick="login()">Entrar</button>
+    <div id="err" style="color:red"></div>
+  </div>
+</div>
+
+<div id="app">
+  <button onclick="logout()">Cerrar sesión</button>
+
+  <div class="card">
+    <div class="form">
+      <input id="usuario" disabled>
+      <input type="date" id="fecha">
+      <input type="time" id="desde">
+      <input type="time" id="hasta">
+      <input id="tk" placeholder="TK">
+      <select id="porcentaje">
+        <option>50%</option>
+        <option>100%</option>
+      </select>
+      <button onclick="guardar()">Guardar</button>
+    </div>
+
+    <textarea id="sugerencia"
+      placeholder="Sugerencias (hasta 50 palabras)"
+      style="width:100%;margin-top:10px"></textarea>
+
+    <div class="semaforo">
+      <div class="verde">0–15 hs</div>
+      <div class="amarillo">16–25 hs</div>
+      <div class="rojo">26+ hs</div>
+    </div>
+  </div>
+
+  <div class="card" id="listado"></div>
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
+
+/* ---------- LOGIN ---------- */
+function login(){
+  fetch(`${API}?action=login&email=${email.value}&clave=${clave.value}`)
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.ok){err.textContent=d.error;return}
+    usuario.value=d.email;
+    loginBox.style.display="none";
+    app.style.display="block";
+    fecha.max=new Date().toISOString().split("T")[0];
+    cargar();
+  });
+}
+
+function logout(){
+  app.style.display="none";
+  loginBox.style.display="flex";
+}
+
+/* ---------- GUARDAR ---------- */
+function guardar(){
+  if(!fecha.value){
+    alert("Seleccioná una fecha");
+    return;
+  }
+
+  const fSel=new Date(fecha.value);
+  const hoy=new Date();
+  hoy.setHours(0,0,0,0);
+
+  if(fSel>hoy){
+    alert("❌ No se pueden cargar horas a futuro");
+    return;
+  }
+
+  const horas=
+    (new Date(`1970-01-01T${hasta.value}`) -
+     new Date(`1970-01-01T${desde.value}`)) / 3600000;
+
+  if(horas<=0){
+    alert("Horario inválido");
+    return;
+  }
+
+  fetch(`${API}?action=cargarHoras
+    &email=${usuario.value}
+    &fecha=${fecha.value}
+    &desde=${desde.value}
+    &hasta=${hasta.value}
+    &horas=${horas}
+    &porcentaje=${porcentaje.value}
+    &sugerencia=${encodeURIComponent(sugerencia.value)}
+    &tk=${tk.value}`
+  ).then(()=>cargar());
+}
+
+/* ---------- BORRADO LÓGICO ---------- */
+function getZeroed(){
+  return JSON.parse(localStorage.getItem("zeroed_"+usuario.value)||"[]");
+}
+function zero(i){
+  const z=getZeroed();
+  if(!z.includes(i)){z.push(i)}
+  localStorage.setItem("zeroed_"+usuario.value,JSON.stringify(z));
+  cargar();
+}
+
+/* ---------- SEMÁFORO ---------- */
+function semaforo(total){
+  const b=document.querySelectorAll(".semaforo div");
+  b.forEach(x=>{x.style.opacity=".3";x.style.border="none"});
+  let i= total<=15?0: total<=25?1:2;
+  b[i].style.opacity="1";
+  b[i].style.border="2px solid #333";
+}
+
+/* ---------- LISTADO ---------- */
+function cargar(){
+  fetch(`${API}?action=listar&email=${usuario.value}`)
+  .then(r=>r.json())
+  .then(data=>{
+    listado.innerHTML="";
+    const zeroed=getZeroed();
+    const porMes={};
+
+    data.forEach((r,i)=>{
+      porMes[r[9]]=porMes[r[9]]||[];
+      porMes[r[9]].push({r,i});
+    });
+
+    const meses=Object.keys(porMes).sort(
+      (a,b)=>new Date("1 "+b)-new Date("1 "+a)
+    );
+
+    let totalMesActivo=0;
+
+    meses.forEach((m,idx)=>{
+      let th=0,tkc=0;
+      listado.innerHTML+=`<div class="mes">${m}</div>`;
+
+      porMes[m].forEach(o=>{
+        const anulado=zeroed.includes(o.i);
+        if(!anulado){
+          th+=Number(o.r[6])||0;
+          if(o.r[10])tkc++;
+        }
+        listado.innerHTML+=`
+          <div class="registro ${anulado?"anulado":""}">
+            <div>
+              ${o.r[3]} · ${o.r[6]} hs · TK ${o.r[10]||""}
+              ${anulado
+                ?'<br><small>Este registro se puso en 0 y no se suma a tus horas cargadas</small>'
+                :''}
+            </div>
+            <button class="x" onclick="zero(${o.i})">✖</button>
+          </div>`;
+      });
+
+      listado.innerHTML+=`<div class="resumen">Total mes: ${th} hs · ${tkc} TK</div>`;
+      if(idx===0) totalMesActivo=th;
+    });
+
+    semaforo(totalMesActivo);
+  });
+}
+</script>
+
+</body>
+</html>
