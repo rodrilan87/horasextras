@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Horas Extras</title>
+
+<style>
+:root{
+  --azul:#0a1a2f;
+  --azul-2:#0b2340;
+  --azul-claro:#eef3fb;
+
+  --verde:#c7f5cf;
+  --verde-2:#36b37e;
+
+  --rosa:#ffd1dc;
+  --rosa-2:#ff4d7d;
+
+  --gris:#e9eef7;
+  --texto:#0b1220;
+  --muted:#6b7280;
+
+  --card:#ffffff;
+  --shadow:0 12px 30px rgba(0,0,0,.10);
+  --radius:16px;
+}
+
+*{box-sizing:border-box;font-family:Arial,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{margin:0;background:var(--azul-claro);color:var(--texto)}
+a{color:#1e5eff;text-decoration:none}
+button{cursor:pointer}
+small{color:var(--muted)}
+
+#loginBox{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:24px;
+}
+.login-card{
+  background:var(--card);
+  width:min(420px,100%);
+  padding:30px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.login-card input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+  outline:none;
+}
+.login-card button{
+  width:100%;
+  padding:12px;
+  background:var(--azul);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+}
+.login-card .link{margin-top:10px;font-size:14px}
+#error{color:#b91c1c;margin-top:10px;min-height:18px}
+
+#app{display:none;padding:25px}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+.topbar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:15px;
+}
+.btn-logout{
+  background:var(--azul);
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:999px;
+  box-shadow:0 10px 24px rgba(10,26,47,.25);
+}
+.btn-logout:hover{background:var(--azul-2)}
+
+.form-row{
+  display:grid;
+  grid-template-columns: 1.2fr .9fr .8fr .8fr .8fr .9fr 1fr;
+  gap:10px;
+  align-items:center;
+}
+@media (max-width: 1100px){
+  .form-row{grid-template-columns: 1fr 1fr 1fr; }
+}
+.input, select, textarea{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #cbd5e1;
+  outline:none;
+  background:#fff;
+}
+#usuario{background:#f3f6fb}
+
+.btn-guardar{
+  background:var(--azul);
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:700;
+  min-height:44px;
+}
+.btn-guardar:hover{background:var(--azul-2)}
+.btn-guardar:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+textarea{
+  width:100%;
+  min-height:110px;
+  margin-top:10px;
+  resize:vertical;
+}
+
+.porcentaje-100{border:2px solid rgba(54,179,126,.35); background:rgba(54,179,126,.08)}
+.porcentaje-50{border:2px solid rgba(255,77,125,.35); background:rgba(255,77,125,.08); color:#7a0b2a}
+
+.hr{height:1px;background:#e6edf7;margin:14px 0}
+
+.bar-card{
+  margin-top:12px;
+  padding:16px;
+  border-radius:14px;
+  border:1px solid #d7e3f5;
+  background:#fff;
+}
+.bar-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+}
+.bar-title{font-size:28px;font-weight:800}
+.bar-sub{margin-top:6px;color:var(--muted)}
+.progress{
+  margin-top:14px;
+  width:100%;
+  height:16px;
+  background:var(--gris);
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid #d7e3f5;
+}
+.progress > div{
+  height:100%;
+  width:0%;
+  transition:width .25s ease;
+}
+.p-green{background:var(--verde-2)}
+.p-yellow{background:#f4b400}
+.p-red{background:#ef4444}
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.toggle{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid #d7e3f5;
+  background:#fff;
+}
+.toggle input{transform:scale(1.2)}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:54px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  border:1px solid transparent;
+}
+.badge-100{
+  background:rgba(54,179,126,.14);
+  color:#0b5b3d;
+  border-color:rgba(54,179,126,.35);
+}
+.badge-50{
+  background:rgba(255,77,125,.14);
+  color:#7a0b2a;
+  border-color:rgba(255,77,125,.35);
+}
+
+.mes{
+  background:var(--verde);
+  padding:12px;
+  border-radius:12px;
+  font-weight:800;
+  text-align:center;
+  margin-top:18px;
+  text-transform:lowercase;
+}
+.registro{
+  background:#ecfff0;
+  padding:14px;
+  border-radius:14px;
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  border-left:6px solid rgba(54,179,126,.55);
+}
+.registro.p50{
+  border-left-color: rgba(255,77,125,.60);
+}
+.registro .left{
+  flex:1;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+.registro .meta{
+  flex:1;
+}
+.registro button{
+  border:none;
+  background:transparent;
+  color:#ef4444;
+  font-size:22px;
+  padding:6px 10px;
+  border-radius:10px;
+}
+.registro button:hover{background:rgba(239,68,68,.08)}
+
+.resumen{
+  margin-top:10px;
+  font-weight:800;
+  text-align:right;
+  font-size:18px;
+}
+.resumen small{font-weight:600}
+
+.toast{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9999;
+  display:none;
+  background:#0b1220;
+  color:#fff;
+  padding:12px 14px;
+  border-radius:14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.25);
+  max-width:360px;
+}
+.toast.ok{background:#0b3b2b}
+.toast.err{background:#4a0b0b}
+
+.undo{
+  margin-top:10px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.btn-undo{
+  background:#fff;
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:800;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginBox">
+  <div class="login-card">
+    <h2>Bienvenido</h2>
+    <p>Ingresá para gestionar tus horas extras</p>
+    <input id="email" placeholder="email">
+    <input id="clave" type="password" placeholder="clave">
+    <button onclick="doLogin()">Iniciar sesión</button>
+    <div class="link">¿No tenés cuenta?
+      <span onclick="doRegister()">Registrate aquí</span>
+    </div>
+    <div id="error"></div>
+  </div>
+</div>
+
+<div id="app">
+
+  <div class="topbar">
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="card">
+    <div class="form-row">
+      <input class="input" id="usuario" disabled>
+      <input class="input" type="date" id="fecha">
+      <!-- Selector hora/minuto (sin reloj nativo) -->
+      <div style="display:flex;gap:8px">
+        <select class="input" id="desdeH" aria-label="Hora desde"></select>
+        <select class="input" id="desdeM" aria-label="Min desde"></select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select class="input" id="hastaH" aria-label="Hora hasta"></select>
+        <select class="input" id="hastaM" aria-label="Min hasta"></select>
+      </div>
+
+      <input class="input" id="tk" placeholder="TK">
+      <select class="input" id="porcentaje" onchange="pintarPorcentajeSelect()">
+        <option value="100%">100%</option>
+        <option value="50%">50%</option>
+      </select>
+      <button class="btn-guardar" id="btnGuardar" onclick="guardar()" disabled>Guardar</button>
+    </div>
+
+    <textarea id="sugerencia" maxlength="50" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
+
+    <div class="hr"></div>
+
+    <div class="bar-card" id="barCard" style="display:none">
+      <div class="bar-head">
+        <div>
+          <div class="bar-title" id="barTitle">Disponibilidad —</div>
+          <div class="bar-sub" id="barSub"></div>
+        </div>
+        <div style="font-weight:900;font-size:18px" id="barRight"></div>
+      </div>
+      <div class="progress" aria-label="barra de progreso">
+        <div id="barFill" class="p-green"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="toggle">
+        <input type="checkbox" id="soloMes" onchange="cargar()">
+        <label for="soloMes"><b>Ver solo mes activo</b></label>
+      </div>
+      <small>Tip: Enter = Guardar · Esc = limpiar TK y sugerencia</small>
+    </div>
+
+    <div id="listado"></div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
+
+// ====== Helpers de fecha/hora (castellano) ======
+function fFecha(v){
+  return new Date(v).toLocaleDateString("es-AR");
+}
+function fHora(v){
+  return new Date(v).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+}
+function monthKeyFromISO(isoDate){
+  const d=new Date(isoDate+"T00:00:00");
+  return d.toLocaleString("es-AR",{month:"long",year:"numeric"}).toLowerCase();
+}
+function hoyISO(){
+  const d=new Date();
+  const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return z.toISOString().slice(0,10);
+}
+function isFutureDate(isoDate){
+  return isoDate > hoyISO();
+}
+
+// ====== Toast ======
+let undoTimer=null;
+let undoData=null;
+function showToast(msg,type="ok",withUndo=false){
+  const t=document.getElementById("toast");
+  t.className="toast "+(type==="ok"?"ok":"err");
+  t.innerHTML = `
+    <div style="font-weight:800">${msg}</div>
+    ${withUndo ? `
+      <div class="undo">
+        <button class="btn-undo" onclick="undoDelete()">Deshacer</button>
+        <small style="opacity:.85">10s</small>
+      </div>
+    ` : ``}
+  `;
+  t.style.display="block";
+  clearTimeout(t._hide);
+  t._hide=setTimeout(()=>{ t.style.display="none"; }, withUndo?10000:2200);
+}
+
+// ====== DeletedRows en localStorage ======
+function getDeleted(){
+  return JSON.parse(localStorage.getItem("deletedRows")||"[]");
+}
+function setDeleted(arr){
+  localStorage.setItem("deletedRows",JSON.stringify(arr));
+}
+function markDeleted(id){
+  const d=getDeleted();
+  if(!d.includes(id)) d.push(id);
+  setDeleted(d);
+
+  // preparar undo (10s)
+  undoData={id};
+  clearTimeout(undoTimer);
+  showToast("Registro eliminado (no suma).", "ok", true);
+  undoTimer=setTimeout(()=>{ undoData=null; }, 10000);
+
+  cargar();
+}
+function undoDelete(){
+  if(!undoData) return;
+  const d=getDeleted().filter(x=>x!==undoData.id);
+  setDeleted(d);
+  undoData=null;
+  showToast("Listo: se deshizo la eliminación.", "ok", false);
+  cargar();
+}
+
+// ====== Login / Register ======
+function doLogin(){
+  error.textContent="";
+  fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.ok){ error.textContent=d.error||"No se pudo iniciar sesión"; return; }
+      usuario.value=d.email;
+
+      // autocompletar TK
+      const lastTK = localStorage.getItem("lastTK_"+d.email) || "";
+      tk.value = lastTK;
+
+      // fecha default hoy
+      fecha.value = hoyISO();
+      setMaxFechaHoy();
+
+      loginBox.style.display="none";
+      app.style.display="block";
+
+      pintarPorcentajeSelect();
+      validarFormulario();
+      cargar();
+    })
+    .catch(()=>{ error.textContent="Error de conexión"; });
+}
+function doRegister(){
+  error.textContent="";
+  fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+    .then(r=>r.json())
+    .then(d=>{
+      error.textContent = d.ok ? "Usuario registrado ✅" : (d.error||"No se pudo registrar");
+      if(d.ok) showToast("Usuario registrado ✅", "ok");
+      else showToast(d.error||"No se pudo registrar", "err");
+    })
+    .catch(()=>{ error.textContent="Error de conexión"; });
+}
+function logout(){
+  app.style.display="none";
+  loginBox.style.display="flex";
+}
+
+// ====== Selector de hora/minuto (sin reloj) ======
+const minuteStep = 10; // <-- múltiplos de 10
+function fillTimeSelects(){
+  const desdeH=document.getElementById("desdeH");
+  const hastaH=document.getElementById("hastaH");
+  const desdeM=document.getElementById("desdeM");
+  const hastaM=document.getElementById("hastaM");
+
+  const hours=[...Array(24)].map((_,i)=>String(i).padStart(2,"0"));
+  const minutes=[];
+  for(let m=0;m<60;m+=minuteStep) minutes.push(String(m).padStart(2,"0"));
+
+  [desdeH,hastaH].forEach(sel=>{
+    sel.innerHTML = `<option value="">--</option>` + hours.map(h=>`<option value="${h}">${h}</option>`).join("");
+  });
+  [desdeM,hastaM].forEach(sel=>{
+    sel.innerHTML = `<option value="">--</option>` + minutes.map(m=>`<option value="${m}">${m}</option>`).join("");
+  });
+
+  // listeners para validar
+  [desdeH,desdeM,hastaH,hastaM,fecha,tk,porcentaje,sugerencia].forEach(el=>{
+    el.addEventListener("input", validarFormulario);
+    el.addEventListener("change", validarFormulario);
+  });
+}
+fillTimeSelects();
+
+function getDesdeStr(){ return (desdeH.value && desdeM.value) ? `${desdeH.value}:${desdeM.value}` : ""; }
+function getHastaStr(){ return (hastaH.value && hastaM.value) ? `${hastaH.value}:${hastaM.value}` : ""; }
+
+function setMaxFechaHoy(){
+  // Bloquear futuro
+  fecha.max = hoyISO();
+}
+fecha.addEventListener("change", ()=>{
+  setMaxFechaHoy();
+  validarFormulario();
+});
+
+// ====== Porcentaje (estilo del select) ======
+function pintarPorcentajeSelect(){
+  porcentaje.classList.remove("porcentaje-100","porcentaje-50");
+  if(porcentaje.value==="50%") porcentaje.classList.add("porcentaje-50");
+  else porcentaje.classList.add("porcentaje-100");
+}
+
+// ====== Validación / botón guardar ======
+function horasEntre(desdeStr,hastaStr){
+  const a=new Date(`1970-01-01T${desdeStr}:00`);
+  const b=new Date(`1970-01-01T${hastaStr}:00`);
+  return (b-a)/3600000;
+}
+function validarFormulario(){
+  const d=fecha.value;
+  const ds=getDesdeStr();
+  const hs=getHastaStr();
+  let ok=true;
+
+  if(!d || !ds || !hs) ok=false;
+  if(d && isFutureDate(d)) ok=false;
+
+  if(ok){
+    const h=horasEntre(ds,hs);
+    if(!(h>0 && isFinite(h))) ok=false;
+  }
+
+  document.getElementById("btnGuardar").disabled = !ok;
+}
+
+// ====== Guardar ======
+function guardar(){
+  const d=fecha.value;
+  if(isFutureDate(d)){
+    showToast("No se pueden cargar horas a futuro.", "err");
+    return;
+  }
+
+  const desde=getDesdeStr();
+  const hasta=getHastaStr();
+  const hReal=horasEntre(desde,hasta);
+  if(!(hReal>0)){
+    showToast("Horario inválido.", "err");
+    return;
+  }
+
+  // guardar TK para autocompletar
+  localStorage.setItem("lastTK_"+usuario.value, tk.value || "");
+
+  // Enviar al Apps Script (API intacta)
+  const url = `${API}?action=cargarHoras&email=${encodeURIComponent(usuario.value)}&fecha=${encodeURIComponent(d)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}&horas=${encodeURIComponent(hReal)}&porcentaje=${encodeURIComponent(porcentaje.value)}&sugerencia=${encodeURIComponent(sugerencia.value)}&tk=${encodeURIComponent(tk.value)}`;
+
+  fetch(url)
+    .then(()=> {
+      showToast("Guardado ✅", "ok");
+      tk.value = localStorage.getItem("lastTK_"+usuario.value) || tk.value;
+      sugerencia.value = "";
+      cargar();
+    })
+    .catch(()=> showToast("No se pudo guardar. Revisá conexión.", "err"));
+}
+
+// ====== Atajos teclado ======
+document.addEventListener("keydown",(e)=>{
+  if(app.style.display!=="block") return;
+
+  if(e.key==="Enter"){
+    if(document.activeElement && document.activeElement.tagName==="TEXTAREA") return;
+    if(!btnGuardar.disabled) guardar();
+  }
+  if(e.key==="Escape"){
+    tk.value="";
+    sugerencia.value="";
+    showToast("TK y sugerencia limpiados.", "ok");
+    validarFormulario();
+  }
+});
+
+// ====== Cálculos: reales vs computables (50%) ======
+function pesoPorcentaje(v){
+  if(!v) return 1;
+  if(String(v).includes("50")) return 0.5;
+  return 1;
+}
+function labelPorcentaje(v){
+  if(String(v).includes("50")) return "50%";
+  return "100%";
+}
+
+/* ✅ FIX MINIMO DEL 50%:
+   Busca "50%" o "100%" en cualquier columna de la fila.
+   Si no lo encuentra, cae a r[7] como siempre. */
+function percentFromRow(r){
+  try{
+    for(let i=0;i<r.length;i++){
+      const s=String(r[i] || "");
+      if(s.includes("50%")) return "50%";
+      if(s.includes("100%")) return "100%";
+    }
+  }catch(e){}
+  return String((r && r[7]) ? r[7] : "100%");
+}
+
+// ====== Barra de disponibilidad ======
+function pintarBarra(mesLabel, totalComputable){
+  const cap=30;
+  const left=Math.max(0, cap - totalComputable);
+  const pct=Math.min(100, (totalComputable/cap)*100);
+
+  barCard.style.display="block";
+  barTitle.textContent = `Disponibilidad — ${mesLabel}`;
+  barSub.textContent = `Te quedan ${left} hs para cargar este mes.`;
+  barRight.textContent = `${totalComputable} / ${cap} hs`;
+
+  barFill.style.width = pct + "%";
+  barFill.classList.remove("p-green","p-yellow","p-red");
+  if(totalComputable<=15) barFill.classList.add("p-green");
+  else if(totalComputable<=25) barFill.classList.add("p-yellow");
+  else barFill.classList.add("p-red");
+}
+
+// ====== Listado ======
+function cargar(){
+  if(!usuario.value) return;
+
+  fetch(`${API}?action=listar&email=${encodeURIComponent(usuario.value)}`)
+    .then(r=>r.json())
+    .then(data=>{
+      listado.innerHTML="";
+      const deleted=getDeleted();
+
+      const refISO = fecha.value || hoyISO();
+      const mesRef = monthKeyFromISO(refISO);
+
+      const porMes={};
+
+      data.forEach((r,i)=>{
+        if(deleted.includes(i)) return;
+
+        let mes = (r[9] ? String(r[9]) : monthKeyFromISO(String(r[3]).slice(0,10))).toLowerCase();
+        if(!porMes[mes]) porMes[mes]=[];
+        porMes[mes].push({r,id:i});
+      });
+
+      const mesesOrdenados = Object.keys(porMes).sort((a,b)=>{
+        const pa=parseMesAnio(a);
+        const pb=parseMesAnio(b);
+        return pb - pa;
+      });
+
+      const solo = document.getElementById("soloMes").checked;
+      const mesesParaMostrar = solo ? mesesOrdenados.filter(m=>m===mesRef) : mesesOrdenados;
+
+      let totalMesComputable=0;
+
+      mesesParaMostrar.forEach(m=>{
+        let thReal=0;
+        let thComp=0;
+        let tkSum=0;
+
+        porMes[m].forEach(o=>{
+          const r=o.r;
+
+          const horasReal = Number(r[6])||0;
+
+          // ✅ porcentaje robusto
+          const pStr = percentFromRow(r);
+          const p2 = pesoPorcentaje(pStr);
+
+          thReal += horasReal;
+          thComp += horasReal * p2;
+
+          const tkVal = Number(r[10]) || 0;
+          tkSum += tkVal;
+        });
+
+        if(m===mesRef) totalMesComputable = round1(thComp);
+
+        listado.innerHTML += `<div class="mes">${m}</div>`;
+
+        porMes[m].forEach(o=>{
+          const r=o.r;
+
+          // ✅ porcentaje robusto para color/badge
+          const pStr = percentFromRow(r);
+          const pLab = labelPorcentaje(pStr);
+
+          const pClass = pLab==="50%" ? "p50" : "";
+          const badgeClass = pLab==="50%" ? "badge-50" : "badge-100";
+
+          const tkVal = (Number(r[10])||0);
+          const tkTxt = tkVal>0 ? `TK ${tkVal}` : `TK -`;
+
+          const sug = r[8] ? String(r[8]) : "";
+
+          listado.innerHTML += `
+            <div class="registro ${pClass}">
+              <div class="left">
+                <div class="meta">
+                  <b>${fFecha(r[3])}</b> · ${fHora(r[4])} a ${fHora(r[5])}
+                  · <b>${r[6]} hs</b> · ${tkTxt}
+                  ${sug ? `<br><small>${escapeHtml(sug)}</small>` : ``}
+                </div>
+                <div style="display:flex;gap:10px;align-items:center">
+                  <span class="badge ${badgeClass}">${pLab}</span>
+                  <button title="Eliminar (no suma)" onclick="markDeleted(${o.id})">✖</button>
+                </div>
+              </div>
+            </div>`;
+        });
+
+        listado.innerHTML += `
+          <div class="resumen">
+            Total mes: ${round1(thComp)} hs <small>(reales ${round1(thReal)} hs)</small> · ${tkSum} TK
+          </div>
+        `;
+      });
+
+      pintarBarra(mesRef, totalMesComputable);
+    })
+    .catch(()=> showToast("No se pudo cargar el listado.", "err"));
+}
+
+// ====== Utilidad para ordenar meses (es-AR) ======
+const mesesMap = {
+  "enero":0,"febrero":1,"marzo":2,"abril":3,"mayo":4,"junio":5,
+  "julio":6,"agosto":7,"septiembre":8,"setiembre":8,"octubre":9,"noviembre":10,"diciembre":11
+};
+function parseMesAnio(label){
+  const s=String(label).replace(" de "," ").trim().toLowerCase();
+  const parts=s.split(/\s+/);
+  const mes=mesesMap[parts[0]] ?? 0;
+  const anio=parseInt(parts[1]||"1970",10);
+  return new Date(anio,mes,1).getTime();
+}
+function round1(n){
+  return Math.round((Number(n)||0)*10)/10;
+}
+function escapeHtml(str){
+  return str
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+// Inicial
+setMaxFechaHoy();
+pintarPorcentajeSelect();
+validarFormulario();
+</script>
+
+</body>
+</html>
