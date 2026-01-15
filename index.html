@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Horas Extras</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
 :root{
@@ -12,16 +13,10 @@
   --amarillo:#ffe9a6;
   --rojo:#ffb3b3;
 }
-
 *{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:var(--azul-claro)}
 
-body{
-  margin:0;
-  background:var(--azul-claro);
-}
-
-/* LOGIN */
-#login{
+#loginBox{
   min-height:100vh;
   display:flex;
   justify-content:center;
@@ -51,43 +46,23 @@ body{
   border-radius:8px;
   cursor:pointer;
 }
-.login-card .link{
-  margin-top:10px;
-  font-size:14px;
-}
-.login-card .link span{
-  color:#1e5eff;
-  cursor:pointer;
-}
+.login-card .link{margin-top:10px;font-size:14px}
+.login-card .link span{color:#1e5eff;cursor:pointer}
 #error{color:red;margin-top:10px}
 
-/* APP */
 #app{display:none;padding:25px}
-.card{
-  background:#fff;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:20px}
 
-/* FORM */
 .form-row{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:10px;
 }
-.form-row input,
-.form-row select{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
+.form-row input,.form-row select{
+  padding:10px;border-radius:8px;border:1px solid #ccc
 }
 .form-row button{
-  background:var(--azul);
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
+  background:var(--azul);color:#fff;border:none;border-radius:8px;cursor:pointer
 }
 
 textarea{
@@ -97,78 +72,90 @@ textarea{
   padding:12px;
   border-radius:10px;
   border:1px solid #ccc;
+  resize:none;
 }
 
-/* SEMAFORO */
-.semaforo{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:15px;
+/* BARRA DISPONIBLE */
+.disponibleBox{
   margin-top:15px;
-}
-.semaforo div{
-  padding:15px;
-  text-align:center;
+  padding:14px;
   border-radius:12px;
-  font-weight:bold;
-  opacity:.3;
+  background:#f7f9ff;
+  border:1px solid #dfe7ff;
 }
-.verde{background:var(--verde)}
-.amarillo{background:var(--amarillo)}
-.rojo{background:var(--rojo)}
-
-/* LISTADO */
-.mes{
-  background:var(--verde);
-  padding:10px;
-  border-radius:10px;
+.disponibleTop{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
   font-weight:bold;
-  text-align:center;
-  margin-top:25px;
 }
-.registro{
-  background:#ecfff0;
-  padding:12px;
-  border-radius:10px;
+.progressOuter{
+  width:100%;
+  height:14px;
+  border-radius:999px;
+  background:#e8eefc;
+  overflow:hidden;
   margin-top:10px;
 }
-.registro small{color:#444}
+.progressInner{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  transition:width .25s ease;
+}
+.progressText{
+  margin-top:8px;
+  font-size:13px;
+  color:#333;
+}
+
+.mes{
+  background:var(--verde);
+  padding:10px;border-radius:10px;
+  font-weight:bold;text-align:center;margin-top:25px
+}
+.registro{
+  background:#ecfff0;padding:12px;border-radius:10px;
+  margin-top:10px;display:flex;
+  justify-content:space-between;align-items:center
+}
+.registro button{
+  border:none;background:transparent;color:red;
+  font-size:18px;cursor:pointer
+}
+.resumen{
+  margin-top:8px;font-weight:bold;text-align:right
+}
+
+.small-muted{color:#666;font-size:12px;margin-top:6px}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login">
+<div id="loginBox">
   <div class="login-card">
     <h2>Bienvenido</h2>
     <p>Ingresá para gestionar tus horas extras</p>
-
     <input id="email" placeholder="email">
     <input id="clave" type="password" placeholder="clave">
-
-    <button onclick="login()">Iniciar sesión</button>
-
-    <div class="link">
-      ¿No tenés cuenta?
-      <span onclick="registrar()">Registrate aquí</span>
+    <button onclick="doLogin()">Iniciar sesión</button>
+    <div class="link">¿No tenés cuenta?
+      <span onclick="doRegister()">Registrate aquí</span>
     </div>
-
     <div id="error"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
 
-  <!-- LOGOUT -->
   <div style="display:flex;justify-content:flex-end;margin-bottom:15px">
-    <button onclick="logout()" style="background:#ddd;border:none;padding:8px 14px;border-radius:8px;cursor:pointer">
+    <button onclick="logout()" style="background:#ddd;border:none;padding:8px 14px;border-radius:8px">
       Cerrar sesión
     </button>
   </div>
 
-  <!-- CARGA -->
   <div class="card">
     <div class="form-row">
       <input id="usuario" disabled>
@@ -183,101 +170,302 @@ textarea{
       <button onclick="guardar()">Guardar</button>
     </div>
 
-    <textarea id="sugerencia" maxlength="50" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
+    <textarea id="sugerencia" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
+    <div class="small-muted" id="contadorPalabras">0 / 50 palabras</div>
 
-    <div class="semaforo">
-      <div class="verde">0 a 15 hs</div>
-      <div class="amarillo">16 a 25 hs</div>
-      <div class="rojo">26 a 30 hs</div>
+    <!-- Barra de disponible del mes (reemplaza semáforo) -->
+    <div class="disponibleBox">
+      <div class="disponibleTop">
+        <div id="mesActivoLabel">Mes activo: —</div>
+        <div id="hsLabel">Cargadas: 0 hs · Disponibles: 30 hs</div>
+      </div>
+      <div class="progressOuter">
+        <div class="progressInner" id="progressBar"></div>
+      </div>
+      <div class="progressText" id="progressText">
+        Te quedan 30 hs disponibles para este mes (tope 30).
+      </div>
     </div>
   </div>
 
-  <!-- LISTADO -->
   <div class="card" id="listado"></div>
-
 </div>
 
 <script>
-/* 🔴 LINK BACKEND */
 const API="https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
+const TOPE_MES = 30;
 
-/* FORMATOS */
-function fFecha(v){return new Date(v).toLocaleDateString("es-AR")}
-function fHora(v){return new Date(v).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}
+function pad2(n){return String(n).padStart(2,"0");}
+function hoyISO(){
+  const d=new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+fecha.max = hoyISO();
+
+function fFecha(v){
+  // v puede venir como string ISO o Date serial de sheet; intentamos
+  try{
+    const d=new Date(v);
+    if(!isNaN(d.getTime())) return d.toLocaleDateString("es-AR");
+  }catch(e){}
+  return String(v || "");
+}
+function fHora(v){
+  // Si ya viene como "HH:MM"
+  const s=String(v||"").trim();
+  if(/^\d{1,2}:\d{2}$/.test(s)) return s;
+  // Si viene ISO
+  try{
+    const d=new Date(v);
+    if(!isNaN(d.getTime())) return d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  }catch(e){}
+  return s;
+}
+
+/* 50 palabras */
+function contarPalabras(txt){
+  const w=txt.trim().split(/\s+/).filter(Boolean);
+  return w;
+}
+function limitar50Palabras(){
+  const w=contarPalabras(sugerencia.value);
+  if(w.length>50){
+    sugerencia.value = w.slice(0,50).join(" ");
+  }
+  const now=contarPalabras(sugerencia.value).length;
+  contadorPalabras.textContent = `${now} / 50 palabras`;
+}
+sugerencia.addEventListener("input",limitar50Palabras);
+
+/* Ocultar local (tu backup lo hacía así) */
+function getDeleted(){
+  return JSON.parse(localStorage.getItem("deletedRows")||"[]");
+}
+function markDeleted(id){
+  const d=getDeleted();
+  if(!d.includes(id)){d.push(id)}
+  localStorage.setItem("deletedRows",JSON.stringify(d));
+  cargar();
+}
+
+/* ======= SESIÓN ======= */
+function setSession(emailValue){
+  localStorage.setItem("hx_email", emailValue);
+}
+function clearSession(){
+  localStorage.removeItem("hx_email");
+}
+function getSession(){
+  return localStorage.getItem("hx_email") || "";
+}
 
 /* LOGIN */
-function login(){
-  fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+function doLogin(){
+  error.textContent="";
+  const em=email.value.trim();
+  const cl=clave.value;
+  if(!em || !cl){ error.textContent="Completá email y clave"; return; }
+
+  fetch(`${API}?action=login&email=${encodeURIComponent(em)}&clave=${encodeURIComponent(cl)}`)
   .then(r=>r.json())
   .then(d=>{
-    if(!d.ok){error.textContent=d.error;return}
-    usuario.value=d.email
-    login.style.display="none"
-    app.style.display="block"
-    cargar()
+    if(!d.ok){error.textContent=d.error||"Credenciales inválidas";return}
+    usuario.value=d.email;
+    setSession(d.email);
+    loginBox.style.display="none";
+    app.style.display="block";
+    // Setea fecha por defecto a hoy si está vacía
+    if(!fecha.value) fecha.value=hoyISO();
+    cargar();
   })
+  .catch(()=> error.textContent="Error de conexión");
 }
+function doRegister(){
+  error.textContent="";
+  const em=email.value.trim();
+  const cl=clave.value;
+  if(!em || !cl){ error.textContent="Completá email y clave"; return; }
 
-/* REGISTRO */
-function registrar(){
-  fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+  fetch(`${API}?action=register&email=${encodeURIComponent(em)}&clave=${encodeURIComponent(cl)}`)
   .then(r=>r.json())
-  .then(d=>error.textContent=d.ok?"Usuario registrado":"Error: "+d.error)
+  .then(d=>error.textContent=d.ok?"Usuario registrado":"Error: "+(d.error||"No se pudo registrar"))
+  .catch(()=> error.textContent="Error de conexión");
 }
-
-/* LOGOUT */
 function logout(){
-  email.value=clave.value=usuario.value=""
-  listado.innerHTML=""
-  app.style.display="none"
-  login.style.display="flex"
+  app.style.display="none";
+  loginBox.style.display="flex";
+  usuario.value="";
+  clearSession();
 }
 
-/* GUARDAR */
+/* ===== GUARDAR ===== */
+function horasEntre(desdeStr, hastaStr){
+  // desde/hasta vienen como HH:MM
+  if(!desdeStr || !hastaStr) return NaN;
+  const [dh,dm]=desdeStr.split(":").map(Number);
+  const [hh,hm]=hastaStr.split(":").map(Number);
+  const a = new Date(1970,0,1,dh,dm,0,0);
+  const b = new Date(1970,0,1,hh,hm,0,0);
+  const diff=(b-a)/3600000;
+  return diff;
+}
+
 function guardar(){
-  const horas=(new Date(`1970-01-01T${hasta.value}`)-new Date(`1970-01-01T${desde.value}`))/3600000
-  if(horas<=0){alert("Horario inválido");return}
-  fetch(`${API}?action=cargarHoras&email=${encodeURIComponent(usuario.value)}&fecha=${fecha.value}&desde=${desde.value}&hasta=${hasta.value}&horas=${horas}&porcentaje=${porcentaje.value}&sugerencia=${encodeURIComponent(sugerencia.value)}&tk=${tk.value}`)
-  .then(()=>cargar())
+  limitar50Palabras();
+
+  const em = usuario.value.trim();
+  if(!em){ alert("Sesión inválida. Volvé a iniciar sesión."); logout(); return; }
+
+  if(!fecha.value) return alert("Elegí una fecha");
+  if(fecha.value > hoyISO()) return alert("No se pueden cargar horas a futuro");
+  if(!desde.value || !hasta.value) return alert("Completá desde y hasta");
+
+  const h = horasEntre(desde.value, hasta.value);
+  if(!isFinite(h) || h<=0) return alert("Horario inválido");
+
+  fetch(`${API}?action=cargarHoras&email=${encodeURIComponent(em)}&fecha=${encodeURIComponent(fecha.value)}&desde=${encodeURIComponent(desde.value)}&hasta=${encodeURIComponent(hasta.value)}&horas=${encodeURIComponent(h)}&porcentaje=${encodeURIComponent(porcentaje.value)}&sugerencia=${encodeURIComponent(sugerencia.value)}&tk=${encodeURIComponent(tk.value||"")}`)
+  .then(()=> {
+    // Limpieza liviana
+    sugerencia.value="";
+    tk.value="";
+    limitar50Palabras();
+    cargar();
+  })
+  .catch(()=> alert("No se pudo guardar. Revisá conexión."));
 }
 
-/* SEMAFORO */
-function semaforo(total){
-  const b=document.querySelectorAll(".semaforo div")
-  b.forEach(x=>{x.style.opacity=".3";x.style.border="none"})
-  const i=total<=15?0:total<=25?1:2
-  b[i].style.opacity="1"
-  b[i].style.border="2px solid #333"
+/* ===== MES ACTIVO ===== */
+function monthKeyFromISO(isoDate){
+  // Queremos que coincida con lo que guardás en tu sheet (viene en inglés por tus capturas)
+  // Formato: "January 2026"
+  const d=new Date(isoDate+"T00:00:00");
+  return d.toLocaleString("en-US",{month:"long",year:"numeric"});
+}
+function currentMonthKey(){
+  const d=new Date();
+  return d.toLocaleString("en-US",{month:"long",year:"numeric"});
+}
+function monthKeyToDate(mk){
+  // mk: "January 2026"
+  const parts=mk.split(" ");
+  const monthName=parts[0];
+  const year=Number(parts[1])||1970;
+  const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const mi=months.indexOf(monthName);
+  return new Date(year, Math.max(0,mi), 1);
 }
 
-/* LISTADO */
+/* ===== BARRA DISPONIBLE ===== */
+function pintarBarra(totalHs, mesKey){
+  const disponibles = Math.max(0, TOPE_MES - totalHs);
+  const pct = Math.min(100, (totalHs/TOPE_MES)*100);
+
+  mesActivoLabel.textContent = `Mes activo: ${mesKey}`;
+  hsLabel.textContent = `Cargadas: ${totalHs} hs · Disponibles: ${disponibles} hs`;
+
+  progressBar.style.width = pct + "%";
+
+  // Color por rango: 0-15 verde, 16-25 amarillo, 26+ rojo
+  let color = getComputedStyle(document.documentElement).getPropertyValue("--verde").trim();
+  if(totalHs>15 && totalHs<=25){
+    color = getComputedStyle(document.documentElement).getPropertyValue("--amarillo").trim();
+  } else if(totalHs>25){
+    color = getComputedStyle(document.documentElement).getPropertyValue("--rojo").trim();
+  }
+  progressBar.style.background = color;
+
+  if(totalHs<=TOPE_MES){
+    progressText.textContent = `Te quedan ${disponibles} hs disponibles para este mes (tope ${TOPE_MES}).`;
+  } else {
+    progressText.textContent = `Te pasaste del tope por ${totalHs-TOPE_MES} hs. Esas horas deberían contarse para el mes siguiente.`;
+  }
+}
+
+/* ===== LISTADO ===== */
 function cargar(){
-  fetch(`${API}?action=listar&email=${encodeURIComponent(usuario.value)}`)
+  const em = usuario.value.trim();
+  if(!em){ return; }
+
+  fetch(`${API}?action=listar&email=${encodeURIComponent(em)}`)
   .then(r=>r.json())
   .then(data=>{
-    listado.innerHTML=""
-    if(!data.length){listado.innerHTML="<p>No hay registros.</p>";return}
-    const porMes={}
-    data.forEach(r=>{
-      porMes[r[9]]=porMes[r[9]]||[]
-      porMes[r[9]].push(r)
-    })
-    Object.keys(porMes).forEach(m=>{
-      let th=0,tkc=0
-      porMes[m].forEach(r=>{th+=Number(r[6])||0;if(r[10])tkc++})
-      listado.innerHTML+=`<div class="mes">${m} — ${th} hs · ${tkc} TK</div>`
-      semaforo(th)
-      porMes[m].forEach(r=>{
-        listado.innerHTML+=`
+    listado.innerHTML="";
+    const deleted=getDeleted();
+
+    // Mes activo: si hay fecha cargada -> ese mes, si no -> mes actual
+    const mesRef = fecha.value ? monthKeyFromISO(fecha.value) : currentMonthKey();
+
+    // Agrupar por mes (columna 9 según tu backup)
+    const porMes={};
+    data.forEach((r,i)=>{
+      if(deleted.includes(i)) return;
+      const mk = r[9] || "Sin mes";
+      porMes[mk]=porMes[mk]||[];
+      porMes[mk].push({r,id:i});
+    });
+
+    // Ordenar meses por fecha (desc)
+    const meses = Object.keys(porMes).sort((a,b)=> monthKeyToDate(b)-monthKeyToDate(a));
+
+    // Calcular total del mes activo para la barra
+    let totalMesActivo=0;
+    if(porMes[mesRef]){
+      porMes[mesRef].forEach(o=>{
+        totalMesActivo += Number(o.r[6])||0;
+      });
+    }
+    pintarBarra(Math.round(totalMesActivo*100)/100, mesRef);
+
+    // Render
+    meses.forEach(m=>{
+      let th=0,tkc=0;
+
+      porMes[m].forEach(o=>{
+        const r=o.r;
+        th += Number(r[6])||0;
+        if(r[10]) tkc++;
+      });
+
+      listado.innerHTML += `<div class="mes">${m}</div>`;
+
+      porMes[m].forEach(o=>{
+        const r=o.r;
+        listado.innerHTML += `
           <div class="registro">
-            <b>${fFecha(r[3])}</b> · ${fHora(r[4])} a ${fHora(r[5])} · ${r[6]} hs · TK ${r[10]} · ${r[7]}<br>
-            <small>${r[8]||""}</small>
-          </div>`
-      })
-    })
+            <div>
+              <b>${fFecha(r[3])}</b> · ${fHora(r[4])} a ${fHora(r[5])}
+              · ${r[6]} hs · TK ${r[10]||""}
+              <br><small>${r[8]||""}</small>
+            </div>
+            <button title="Ocultar" onclick="markDeleted(${o.id})">✖</button>
+          </div>`;
+      });
+
+      listado.innerHTML += `<div class="resumen">Total mes: ${Math.round(th*100)/100} hs · ${tkc} TK</div>`;
+    });
   })
+  .catch(()=> {
+    listado.innerHTML = "<b>Error cargando datos</b>";
+  });
 }
+
+/* ===== AUTO-RESTORE SESIÓN ===== */
+(function init(){
+  limitar50Palabras();
+  const em=getSession();
+  if(em){
+    usuario.value=em;
+    loginBox.style.display="none";
+    app.style.display="block";
+    if(!fecha.value) fecha.value=hoyISO();
+    cargar();
+  } else {
+    loginBox.style.display="flex";
+    app.style.display="none";
+  }
+})();
 </script>
 
 </body>
 </html>
+
