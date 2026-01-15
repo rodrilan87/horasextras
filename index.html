@@ -74,20 +74,7 @@ textarea{
   padding:12px;border-radius:10px;border:1px solid #ccc
 }
 
-/* Semáforo (queda, pero si querés “sacarlo”, podés ocultar este bloque con display:none) */
-.semaforo{
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  gap:15px;margin-top:15px
-}
-.semaforo div{
-  padding:15px;text-align:center;border-radius:12px;
-  font-weight:bold;opacity:.3
-}
-.verde{background:var(--verde)}
-.amarillo{background:var(--amarillo)}
-.rojo{background:var(--rojo)}
-
-/* Barra de disponibilidad */
+/* Barra “te quedan X horas” */
 .barra-wrap{
   margin-top:14px;
   padding:12px;
@@ -194,15 +181,7 @@ textarea{
 
     <textarea id="sugerencia" maxlength="300" placeholder="Sugerencias (hasta 50 palabras)"></textarea>
 
-    <!-- Semáforo (opcional) -->
-    <div class="semaforo" id="semaforoBox">
-      <div class="verde">0 a 15 hs</div>
-      <div class="amarillo">16 a 25 hs</div>
-      <div class="rojo">26 a 30 hs</div>
-    </div>
-
-    <!-- Barra “te quedan X horas” (esto reemplaza el semáforo si querés) -->
-    <div class="barra-wrap" id="barraWrap" style="margin-top:14px">
+    <div class="barra-wrap" id="barraWrap">
       <div class="barra-top">
         <div id="barraTitulo">Disponibilidad del mes</div>
         <div id="barraNumero">0 / 30 hs</div>
@@ -229,12 +208,43 @@ const TOPE_MENSUAL = 30;
 ========================= */
 function apiUrl(params){
   const qs = new URLSearchParams(params);
-  qs.set("_ts", Date.now()); // anti-cache fuerte (GitHub + navegadores)
+  qs.set("_ts", Date.now()); // anti-cache fuerte
   return `${API}?${qs.toString()}`;
 }
 
 function fFecha(v){return new Date(v).toLocaleDateString("es-AR")}
 function fHora(v){return new Date(v).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* Convierte "January 2026" -> "Enero 2026" (y si ya viene en ES, lo deja) */
+const MONTH_ES = {
+  january:"enero", february:"febrero", march:"marzo", april:"abril", may:"mayo", june:"junio",
+  july:"julio", august:"agosto", september:"septiembre", october:"octubre", november:"noviembre", december:"diciembre"
+};
+function mesEnEspanol(mesKey, anyRow){
+  // 1) Si tengo una fecha real del registro, la uso (mejor)
+  if(anyRow && anyRow[3]){
+    const d = new Date(anyRow[3]);
+    if(!isNaN(d)) return d.toLocaleString("es-AR",{month:"long",year:"numeric"});
+  }
+  // 2) Si viene "January 2026" / "February 2026" lo traduzco
+  const parts = String(mesKey||"").trim().split(/\s+/);
+  if(parts.length>=2){
+    const m = (parts[0]||"").toLowerCase();
+    const y = parts[1];
+    if(MONTH_ES[m]) return MONTH_ES[m].replace(/^./,c=>c.toUpperCase()) + " " + y;
+  }
+  // 3) Si ya está en español u otro formato, lo muestro tal cual
+  return mesKey || "Sin mes";
+}
 
 function getDeleted(){
   return JSON.parse(localStorage.getItem("deletedRows")||"[]");
@@ -274,7 +284,7 @@ async function doLogin(){
     loginBox.style.display="none";
     app.style.display="block";
 
-    // set defaults
+    // defaults
     const hoy = new Date();
     fecha.value = hoy.toISOString().slice(0,10);
     desde.value = "09:00";
@@ -319,11 +329,10 @@ async function guardar(){
   const em = (usuario.value||"").trim();
   if(!em){ alert("Sesión inválida. Volvé a iniciar sesión."); logout(); return; }
 
-  // Validaciones básicas
   if(!fecha.value){ alert("Elegí una fecha"); return; }
   if(!desde.value || !hasta.value){ alert("Completá desde y hasta"); return; }
 
-  // No permitir horas a futuro (fecha > hoy)
+  // ✅ BLOQUEO FUTURO
   const hoy = new Date();
   hoy.setHours(0,0,0,0);
   const f = new Date(fecha.value + "T00:00:00");
@@ -332,13 +341,12 @@ async function guardar(){
     return;
   }
 
-  // sugerencia <= 50 palabras
   if(!validarSugerencia(sugerencia.value)){
     alert("La sugerencia debe tener como máximo 50 palabras.");
     return;
   }
 
-  // calcular horas (si cruza medianoche, lo soporta sumando 24h)
+  // calcular horas (soporta cruce medianoche)
   const d1 = new Date(`1970-01-01T${desde.value}:00`);
   let d2 = new Date(`1970-01-01T${hasta.value}:00`);
   if(d2 <= d1) d2 = new Date(d2.getTime() + 24*3600*1000);
@@ -357,24 +365,13 @@ async function guardar(){
       sugerencia: sugerencia.value || "",
       tk: (tk.value||"")
     }));
-    // limpiar campos “cómodos”
+
     tk.value = "";
     sugerencia.value = "";
     await cargar();
   }catch(e){
     alert("No pude guardar. Probá recargar (Ctrl+Shift+R).");
   }
-}
-
-/* =========================
-   SEMÁFORO (opcional)
-========================= */
-function semaforo(total){
-  const b=document.querySelectorAll(".semaforo div");
-  b.forEach(x=>{x.style.opacity=".3";x.style.border="none"});
-  let i= total<=15?0: total<=25?1:2;
-  b[i].style.opacity="1";
-  b[i].style.border="2px solid #333";
 }
 
 /* =========================
@@ -389,7 +386,6 @@ function pintarBarra(totalMes, mesLabel){
   barraNumero.textContent = `${total} / ${TOPE_MENSUAL} hs`;
   barraSub.textContent = `Te quedan ${restante} hs para cargar este mes.`;
 
-  // color según rangos
   const bar = document.getElementById("barra");
   bar.classList.remove("verde","amarillo","rojo");
   if(total <= 15) bar.classList.add("verde");
@@ -397,9 +393,6 @@ function pintarBarra(totalMes, mesLabel){
   else bar.classList.add("rojo");
 
   barraFill.style.width = pct.toFixed(1) + "%";
-
-  // Si querés esconder el semáforo y quedarte solo con la barra:
-  // document.getElementById("semaforoBox").style.display="none";
 }
 
 /* =========================
@@ -417,10 +410,10 @@ async function cargar(){
 
   // Mes activo: por la fecha seleccionada (si no, hoy)
   const refDate = fecha.value ? new Date(fecha.value+"T00:00:00") : new Date();
-  const mesRefKey = refDate.toLocaleString("en-US",{month:"long",year:"numeric"});
-  const mesRefLabel = refDate.toLocaleString("es-AR",{month:"long",year:"numeric"});
+  const mesRefKey = refDate.toLocaleString("en-US",{month:"long",year:"numeric"}); // clave que trae el backend
+  const mesRefLabel = refDate.toLocaleString("es-AR",{month:"long",year:"numeric"}); // UI
 
-  // Agrupar por mes (col 9) y filtrar borrados (local)
+  // Agrupar por mes (col 9)
   const porMes = {};
   data.forEach((row, idx)=>{
     if(deleted.includes(idx)) return;
@@ -429,13 +422,14 @@ async function cargar(){
     porMes[mes].push({row, id: idx});
   });
 
-  // Ordenar meses “inteligente”: intento parsear fecha del primer registro del mes
+  // Ordenar meses por fecha real (del primer registro del mes)
   const meses = Object.keys(porMes).sort((a,b)=>{
-    // si el mes viene como "January 2026" lo parseo:
-    const da = new Date(a + " 01");
-    const db = new Date(b + " 01");
+    const ra = porMes[a]?.[0]?.row;
+    const rb = porMes[b]?.[0]?.row;
+    const da = ra && ra[3] ? new Date(ra[3]) : new Date(a + " 01");
+    const db = rb && rb[3] ? new Date(rb[3]) : new Date(b + " 01");
     if(!isNaN(da) && !isNaN(db)) return db - da; // desc
-    return a.localeCompare(b);
+    return String(a).localeCompare(String(b));
   });
 
   let totalMesRef = 0;
@@ -443,27 +437,21 @@ async function cargar(){
   meses.forEach(m=>{
     let th=0, tkc=0;
 
-    // total del mes
     porMes[m].forEach(o=>{
       const row=o.row;
-      const horas = Number(row[6])||0;
-      th += horas;
-
-      // TK count: si tiene algo
+      th += Number(row[6])||0;
       if((row[10]||"").toString().trim()) tkc++;
     });
 
+    // “mesRefKey” está en inglés porque así lo genera el backend, pero:
+    // si el backend te devuelve m en inglés, coincide. Si te devuelve en otro formato, igual la barra se calcula por fecha seleccionada.
     if(m===mesRefKey) totalMesRef = th;
 
-    // Render
-    listado.innerHTML += `<div class="mes">${m}</div>`;
+    const tituloMesES = mesEnEspanol(m, porMes[m][0]?.row);
+    listado.innerHTML += `<div class="mes">${tituloMesES}</div>`;
 
     porMes[m].forEach(o=>{
       const r=o.row;
-
-      // NOTA: tus columnas son:
-      // 3 fecha, 4 desde, 5 hasta, 6 horas, 8 sugerencia, 10 tk
-      // algunos valores pueden venir como string ISO. Los formateo con Date.
       const sug = (r[8]||"").toString().trim();
       const tkVal = (r[10]||"").toString().trim();
 
@@ -481,25 +469,29 @@ async function cargar(){
     listado.innerHTML += `<div class="resumen">Total mes: ${th} hs · ${tkc} TK</div>`;
   });
 
-  // Semáforo + Barra en base al mes activo
-  semaforo(totalMesRef);
+  // Si el backend no coincide con mesRefKey, calculo totalMesRef por fecha seleccionada:
+  // (esto lo hace robusto y evita “mes en inglés” como dependencia)
+  if(!totalMesRef){
+    // buscar el mes que tenga misma (month/year) que refDate por fecha real
+    const ymRef = refDate.getFullYear()*100 + refDate.getMonth();
+    let th2 = 0;
+    Object.keys(porMes).forEach(m=>{
+      porMes[m].forEach(o=>{
+        const d = new Date(o.row[3]);
+        if(!isNaN(d) && (d.getFullYear()*100 + d.getMonth()) === ymRef){
+          th2 += Number(o.row[6])||0;
+        }
+      });
+    });
+    totalMesRef = th2;
+  }
+
   pintarBarra(totalMesRef, mesRefLabel);
 }
 
-/* Escape HTML básico */
-function escapeHtml(str){
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-/* Auto-cargar al cambiar la fecha (para que la barra/semaforo cambien de mes) */
+/* Recalcular al cambiar fecha (cambia mes activo) */
 document.addEventListener("DOMContentLoaded", ()=>{
-  const f = document.getElementById("fecha");
-  f.addEventListener("change", ()=>{
+  fecha.addEventListener("change", ()=>{
     if(app.style.display==="block") cargar();
   });
 });
