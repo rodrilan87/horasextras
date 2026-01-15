@@ -12,10 +12,16 @@
   --amarillo:#ffe9a6;
   --rojo:#ffb3b3;
 }
-*{box-sizing:border-box;font-family:Arial,sans-serif}
-body{margin:0;background:var(--azul-claro)}
 
-#loginBox{
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+
+body{
+  margin:0;
+  background:var(--azul-claro);
+}
+
+/* LOGIN */
+#login{
   min-height:100vh;
   display:flex;
   justify-content:center;
@@ -55,8 +61,8 @@ body{margin:0;background:var(--azul-claro)}
 }
 #error{color:red;margin-top:10px}
 
+/* APP */
 #app{display:none;padding:25px}
-
 .card{
   background:#fff;
   border-radius:14px;
@@ -64,6 +70,7 @@ body{margin:0;background:var(--azul-claro)}
   margin-bottom:20px;
 }
 
+/* FORM */
 .form-row{
   display:grid;
   grid-template-columns:repeat(7,1fr);
@@ -92,6 +99,7 @@ textarea{
   border:1px solid #ccc;
 }
 
+/* SEMAFORO */
 .semaforo{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
@@ -109,6 +117,7 @@ textarea{
 .amarillo{background:var(--amarillo)}
 .rojo{background:var(--rojo)}
 
+/* LISTADO */
 .mes{
   background:var(--verde);
   padding:10px;
@@ -122,29 +131,15 @@ textarea{
   padding:12px;
   border-radius:10px;
   margin-top:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
 }
-.registro button{
-  border:none;
-  background:transparent;
-  color:red;
-  font-size:18px;
-  cursor:not-allowed;
-}
-.resumen{
-  margin-top:8px;
-  font-weight:bold;
-  text-align:right;
-}
+.registro small{color:#444}
 </style>
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<div id="loginBox">
+<div id="login">
   <div class="login-card">
     <h2>Bienvenido</h2>
     <p>Ingresá para gestionar tus horas extras</p>
@@ -152,11 +147,11 @@ textarea{
     <input id="email" placeholder="email">
     <input id="clave" type="password" placeholder="clave">
 
-    <button onclick="doLogin()">Iniciar sesión</button>
+    <button onclick="login()">Iniciar sesión</button>
 
     <div class="link">
       ¿No tenés cuenta?
-      <span onclick="doRegister()">Registrate aquí</span>
+      <span onclick="registrar()">Registrate aquí</span>
     </div>
 
     <div id="error"></div>
@@ -166,12 +161,14 @@ textarea{
 <!-- APP -->
 <div id="app">
 
+  <!-- LOGOUT -->
   <div style="display:flex;justify-content:flex-end;margin-bottom:15px">
     <button onclick="logout()" style="background:#ddd;border:none;padding:8px 14px;border-radius:8px;cursor:pointer">
       Cerrar sesión
     </button>
   </div>
 
+  <!-- CARGA -->
   <div class="card">
     <div class="form-row">
       <input id="usuario" disabled>
@@ -195,140 +192,90 @@ textarea{
     </div>
   </div>
 
+  <!-- LISTADO -->
   <div class="card" id="listado"></div>
+
 </div>
 
 <script>
-/* 🔴 LINK A TU APPS SCRIPT (NO TOCAR) */
+/* 🔴 LINK BACKEND */
 const API="https://script.google.com/macros/s/AKfycbyiFERs6AduXngSs4XnY1CwzTPJjtqv5G-dFut2GqBtmPwjZh5HnO1dE_s3jIYpSaUXHQ/exec";
 
+/* FORMATOS */
 function fFecha(v){return new Date(v).toLocaleDateString("es-AR")}
 function fHora(v){return new Date(v).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}
 
 /* LOGIN */
-function doLogin(){
-  error.textContent = "Verificando…";
-
-  fetch(
-    `${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`,
-    { cache: "no-store" }
-  )
-  .then(r => r.text())
-  .then(txt => {
-    let d;
-    try { d = JSON.parse(txt); }
-    catch(e){
-      error.textContent = "Error de respuesta del servidor";
-      console.error(txt);
-      return;
-    }
-
-    if(!d.ok){
-      error.textContent = d.error || "Login inválido";
-      return;
-    }
-
-    usuario.value = d.email;
-    document.getElementById("loginBox").style.display = "none";
-    app.style.display = "block";
-    cargar();
+function login(){
+  fetch(`${API}?action=login&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.ok){error.textContent=d.error;return}
+    usuario.value=d.email
+    login.style.display="none"
+    app.style.display="block"
+    cargar()
   })
-  .catch(err=>{
-    console.error(err);
-    error.textContent = "No se pudo conectar al servidor";
-  });
 }
 
 /* REGISTRO */
-function doRegister(){
-  fetch(
-    `${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`,
-    { cache:"no-store" }
-  )
-  .then(r=>r.text())
-  .then(t=>{
-    try{
-      const d=JSON.parse(t);
-      error.textContent=d.ok?"Usuario registrado":d.error;
-    }catch{
-      error.textContent="Error de registro";
-    }
-  });
+function registrar(){
+  fetch(`${API}?action=register&email=${encodeURIComponent(email.value)}&clave=${encodeURIComponent(clave.value)}`)
+  .then(r=>r.json())
+  .then(d=>error.textContent=d.ok?"Usuario registrado":"Error: "+d.error)
 }
 
 /* LOGOUT */
 function logout(){
-  email.value=clave.value=usuario.value="";
-  listado.innerHTML="";
-  app.style.display="none";
-  document.getElementById("loginBox").style.display="flex";
+  email.value=clave.value=usuario.value=""
+  listado.innerHTML=""
+  app.style.display="none"
+  login.style.display="flex"
 }
 
 /* GUARDAR */
 function guardar(){
-  const horas=(new Date(`1970-01-01T${hasta.value}`)-new Date(`1970-01-01T${desde.value}`))/3600000;
+  const horas=(new Date(`1970-01-01T${hasta.value}`)-new Date(`1970-01-01T${desde.value}`))/3600000
   if(horas<=0){alert("Horario inválido");return}
-
-  fetch(
-    `${API}?action=cargarHoras&email=${encodeURIComponent(usuario.value)}&fecha=${fecha.value}&desde=${desde.value}&hasta=${hasta.value}&horas=${horas}&porcentaje=${porcentaje.value}&sugerencia=${encodeURIComponent(sugerencia.value)}&tk=${tk.value}`,
-    { cache:"no-store" }
-  ).then(()=>cargar());
+  fetch(`${API}?action=cargarHoras&email=${encodeURIComponent(usuario.value)}&fecha=${fecha.value}&desde=${desde.value}&hasta=${hasta.value}&horas=${horas}&porcentaje=${porcentaje.value}&sugerencia=${encodeURIComponent(sugerencia.value)}&tk=${tk.value}`)
+  .then(()=>cargar())
 }
 
-/* SEMÁFORO */
+/* SEMAFORO */
 function semaforo(total){
-  const b=document.querySelectorAll(".semaforo div");
-  b.forEach(x=>{x.style.opacity=".3";x.style.border="none"});
-  const i=total<=15?0:total<=25?1:2;
-  b[i].style.opacity="1";
-  b[i].style.border="2px solid #333";
+  const b=document.querySelectorAll(".semaforo div")
+  b.forEach(x=>{x.style.opacity=".3";x.style.border="none"})
+  const i=total<=15?0:total<=25?1:2
+  b[i].style.opacity="1"
+  b[i].style.border="2px solid #333"
 }
 
 /* LISTADO */
 function cargar(){
-  fetch(
-    `${API}?action=listar&email=${encodeURIComponent(usuario.value)}`,
-    { cache:"no-store" }
-  )
-  .then(r=>r.text())
-  .then(txt=>{
-    let data;
-    try{ data=JSON.parse(txt); }
-    catch{ listado.innerHTML="Error al cargar datos"; return; }
-
-    listado.innerHTML="";
-    if(!data.length){listado.innerHTML="<p>No hay registros.</p>";return;}
-
-    const hoy=new Date();
-    const mesActual=hoy.toLocaleString("en-US",{month:"long",year:"numeric"});
-    const porMes={};
-
+  fetch(`${API}?action=listar&email=${encodeURIComponent(usuario.value)}`)
+  .then(r=>r.json())
+  .then(data=>{
+    listado.innerHTML=""
+    if(!data.length){listado.innerHTML="<p>No hay registros.</p>";return}
+    const porMes={}
     data.forEach(r=>{
-      porMes[r[9]]=porMes[r[9]]||[];
-      porMes[r[9]].push(r);
-    });
-
+      porMes[r[9]]=porMes[r[9]]||[]
+      porMes[r[9]].push(r)
+    })
     Object.keys(porMes).forEach(m=>{
-      let th=0,tkc=0;
-      porMes[m].forEach(r=>{th+=Number(r[6])||0;if(r[10])tkc++;});
-
-      listado.innerHTML+=`<div class="mes">${m}</div>`;
-
+      let th=0,tkc=0
+      porMes[m].forEach(r=>{th+=Number(r[6])||0;if(r[10])tkc++})
+      listado.innerHTML+=`<div class="mes">${m} — ${th} hs · ${tkc} TK</div>`
+      semaforo(th)
       porMes[m].forEach(r=>{
         listado.innerHTML+=`
           <div class="registro">
-            <div>
-              <b>${fFecha(r[3])}</b> · ${fHora(r[4])} a ${fHora(r[5])} · ${r[6]} hs · TK ${r[10]} · ${r[7]}
-              <br><small>${r[8]||""}</small>
-            </div>
-            <button title="Borrado próximamente">✖</button>
-          </div>`;
-      });
-
-      listado.innerHTML+=`<div class="resumen">Total mes: ${th} hs · ${tkc} TK</div>`;
-      if(m===mesActual) semaforo(th);
-    });
-  });
+            <b>${fFecha(r[3])}</b> · ${fHora(r[4])} a ${fHora(r[5])} · ${r[6]} hs · TK ${r[10]} · ${r[7]}<br>
+            <small>${r[8]||""}</small>
+          </div>`
+      })
+    })
+  })
 }
 </script>
 
