@@ -379,7 +379,7 @@ textarea{
 // ================================
 
 // ⚠️ Cambiá SOLO este link cuando vuelvas a desplegar el Apps Script.
-const API = "https://script.google.com/macros/s/AKfycbwPJzg-K9HRDxCnQ-yZedLFSF4JRlQJHxAflRqg0Ze5fbepQ24oNCgUn5M-V7oo8yaP/exec";
+const API = "https://script.google.com/macros/s/AKfycbw3sbopLLN4l9LGp4Ez6OPu6M49ZiukC8YjcSH_5E_rdkN9445auPjIRfPu0ogRTRoR/exec";
 
 const minuteStep = 10;
 const MESES_ES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -432,10 +432,13 @@ function monthKeyByCutFromISO(isoDate){
   const idx = d.getMonth();
   const corte = getCutForMonthIdx(idx);
   const dia = d.getDate();
+  // "Mes de cobro": por defecto es el mes siguiente al trabajado.
+  // Si el día supera el corte, pasa a cobrarse 2 meses después.
   let y = d.getFullYear();
-  let m = idx;
+  let m = idx + 1;
+  if(m>11){ m=0; y=y+1; }
   if(dia > corte){
-    m = idx + 1;
+    m = m + 1;
     if(m>11){ m=0; y=y+1; }
   }
   return `${MESES_ES[m]} de ${y}`;
@@ -527,7 +530,8 @@ async function jpost(action, payload){
   const r = await fetch(u.toString(), {
     method:'POST',
     cache:'no-store',
-    headers:{ 'Content-Type':'application/json' },
+    // IMPORTANTE: usamos text/plain para evitar preflight CORS (Apps Script + GitHub Pages).
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
     body: JSON.stringify(payload||{})
   });
   return await r.json();
@@ -1316,7 +1320,9 @@ async function renderCortes(){
   el.innerHTML = `
     <div style="font-weight:900;font-size:18px">Cortes mensuales</div>
     <div class="small-note">
-      La fecha de corte define el "mes de cobro". Ejemplo: si <b>enero cierra el 16</b>, entonces el <b>17/01</b> cuenta como <b>febrero</b>.
+      La fecha de corte define el <b>mes de cobro</b>. Por defecto, lo trabajado en un mes se cobra el <b>mes siguiente</b>.
+      Si la fecha supera el corte, pasa a cobrarse <b>dos meses después</b>.
+      <br>Ejemplo: si <b>enero cierra el 16</b>, entonces <b>01–16/01 → febrero</b> y <b>17–31/01 → marzo</b>.
     </div>
 
     <div class="hr"></div>
